@@ -487,37 +487,30 @@ async function buscarSet(){
   const btn=document.getElementById('btn-buscar');
   btn.disabled=true; btn.textContent='Buscando...';
 
+  const RB_KEY='0613166ec854588f7e2819ddccbeef51';
   const imgBrickset=`https://images.brickset.com/sets/images/${num}-1.jpg`;
   const imgBricklink=`https://img.bricklink.com/ItemImage/SN/0/${num}-1.png`;
 
-  // 1. Tentar Claude API (funciona em artifact/app context)
+  // Rebrickable com Authorization header (confirmado funcional)
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:150,
-        messages:[{role:'user',content:`LEGO set number ${num}. Reply ONLY with valid JSON, no markdown: {"nome":"full set name in portuguese or english","pecas":number_of_pieces}. If unknown return {"nome":"","pecas":0}`}]
-      })
+    const r=await fetch(`https://rebrickable.com/api/v3/lego/sets/${num}-1/`,{
+      headers:{'Authorization':`key ${RB_KEY}`}
     });
     if(r.ok){
-      const data=await r.json();
-      const text=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
-      const clean=text.replace(/```json|```/g,'').trim();
-      const d=JSON.parse(clean);
-      if(d.nome){
-        document.getElementById('f-nome').value=d.nome;
-        showToast('✓ Set encontrado!','#25d366');
+      const d=await r.json();
+      if(d.name){
+        document.getElementById('f-nome').value=d.name;
+        if(d.num_parts) document.getElementById('f-pc').value=d.num_parts;
+        calcAuto();
+        const imgUrl=d.set_img_url||imgBrickset;
+        mostrarPreview(num,d.name,d.num_parts||0,imgUrl,imgBricklink);
+        showToast('✓ '+d.name+' — '+d.num_parts+' peças','#25d366');
+        btn.disabled=false; btn.textContent='🔍 Buscar'; return;
       }
-      if(d.pecas&&d.pecas>0) document.getElementById('f-pc').value=d.pecas;
-      calcAuto();
-      mostrarPreview(num, d.nome||'', d.pecas||0, imgBrickset, imgBricklink);
-      btn.disabled=false; btn.textContent='🔍 Buscar'; return;
     }
-  }catch(e){console.error('Claude API error:',e);}
+  }catch(e){console.error('Rebrickable:',e);}
 
-  // 2. Fallback: cache local
+  // Fallback: cache local
   const cached=SETS_CACHE[num];
   if(cached){
     document.getElementById('f-nome').value=cached.nome;
@@ -528,9 +521,9 @@ async function buscarSet(){
     btn.disabled=false; btn.textContent='🔍 Buscar'; return;
   }
 
-  // 3. Último fallback: só imagem
+  // Último fallback
   mostrarPreview(num,'',0,imgBrickset,imgBricklink);
-  showToast('Set não encontrado — preencha nome e peças manualmente','#f5a623');
+  showToast('Set não encontrado — preencha manualmente','#f5a623');
   btn.disabled=false; btn.textContent='🔍 Buscar';
 }
 
