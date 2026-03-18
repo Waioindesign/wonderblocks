@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wonderblocks — Radar de Ofertas LEGO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0f1e;--bg2:#111827;--bg3:#1a2236;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --text:#f0ede8;--text2:#9ca3af;--text3:#4b5563;
+  --wb-grad:linear-gradient(135deg,#1d4ed8 0%,#2563eb 50%,#0ea5e9 100%);
+  --wb-grad-btn:linear-gradient(135deg,#2563eb,#0ea5e9);
+  --blue:#60a5fa;--blue-dim:rgba(96,165,250,.10);--blue-border:rgba(96,165,250,.25);
+  --green:#34d399;--green-dim:rgba(52,211,153,.10);--green-border:rgba(52,211,153,.25);
+  --amber:#fbbf24;--amber-dim:rgba(251,191,36,.10);--amber-border:rgba(251,191,36,.25);
+  --red:#f87171;--red-dim:rgba(248,113,113,.10);--red-border:rgba(248,113,113,.25);
+  --radius:10px;--radius-lg:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+
+header{padding:1rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;background:rgba(10,15,30,.93);backdrop-filter:blur(12px);}
+.logo img{height:26px;}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);font-weight:500;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero{background:var(--wb-grad);padding:2.5rem 2rem 2rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(14,165,233,.3) 0%,transparent 60%);}
+.hero-title{font-size:28px;font-weight:800;letter-spacing:-.03em;position:relative;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:5px;position:relative;font-weight:400;}
+
+main{max-width:760px;margin:0 auto;padding:1.5rem 2rem 3rem;}
+
+.toolbar{padding-top:1.5rem;display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;}
+
+.toolbar-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+.search-box{flex:1;min-width:180px;position:relative;}
+.search-box input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:8px 16px 8px 34px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;}
+.search-box input:focus{border-color:rgba(96,165,250,.4);}
+.search-box input::placeholder{color:var(--text3);}
+.search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.4;}
+
+.filter-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.filter-btn:hover{color:var(--text);}
+.filter-btn.active{background:var(--wb-grad-btn);color:#fff;border-color:transparent;}
+
+.select-filter{padding:7px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;outline:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239ca3af' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.select-filter:focus{border-color:rgba(96,165,250,.4);color:var(--text);}
+.select-filter option{background:var(--bg3);color:var(--text);}
+
+.count{font-size:12px;color:var(--text3);margin-bottom:1rem;font-weight:500;}
+.offers-grid{display:flex;flex-direction:column;gap:10px;}
+
+.offer-card{border-radius:var(--radius-lg);overflow:hidden;animation:fadeUp .2s ease;transition:transform .15s;border:1px solid var(--border);}
+.offer-card:hover{transform:translateY(-1px);}
+.offer-card.selo-muitobom{background:var(--blue-dim);border-color:var(--blue-border);}
+.offer-card.selo-bom{background:var(--green-dim);border-color:var(--green-border);}
+.offer-card.selo-media{background:var(--amber-dim);border-color:var(--amber-border);}
+.offer-card.selo-ruim{background:var(--red-dim);border-color:var(--red-border);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.card-inner{display:flex;}
+.card-image{width:120px;min-width:120px;background:#fff;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-lg) 0 0 var(--radius-lg);overflow:hidden;}
+.card-image img{width:100%;height:100%;object-fit:contain;padding:6px;min-height:120px;}
+.card-image-ph{width:100%;min-height:120px;display:flex;align-items:center;justify-content:center;background:var(--bg3);font-size:32px;}
+
+.card-body{flex:1;padding:.9rem 1rem;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.card-name{font-size:14px;font-weight:700;line-height:1.3;flex:1;}
+.card-num{font-weight:400;color:var(--text3);font-size:13px;}
+.loja-icon{width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;}
+.loja-icon img{width:100%;height:100%;object-fit:cover;}
+
+.card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.metric{background:rgba(0,0,0,.2);border-radius:8px;padding:7px 9px;}
+.metric-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:2px;}
+.metric-value{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em;}
+
+.card-footer{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.04em;white-space:nowrap;}
+.badge-dot{width:5px;height:5px;border-radius:50%;}
+.badge-mb{background:rgba(96,165,250,.15);color:var(--blue);} .badge-mb .badge-dot{background:var(--blue);}
+.badge-bom{background:rgba(52,211,153,.15);color:var(--green);} .badge-bom .badge-dot{background:var(--green);}
+.badge-med{background:rgba(251,191,36,.15);color:var(--amber);} .badge-med .badge-dot{background:var(--amber);}
+.badge-ruim{background:rgba(248,113,113,.15);color:var(--red);} .badge-ruim .badge-dot{background:var(--red);}
+.badge-cupom{background:rgba(37,99,235,.15);border:1px solid rgba(59,130,246,.25);color:var(--blue);}
+.badge-tema{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.2);}
+.badge-hist{background:rgba(251,191,36,.15);color:var(--amber);}
+
+.timer{font-size:10px;color:var(--text3);margin-left:auto;font-weight:500;}
+.ver-btn{margin-left:auto;padding:6px 14px;border-radius:8px;background:var(--wb-grad-btn);color:#fff;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;border:none;cursor:pointer;text-decoration:none;white-space:nowrap;}
+
+.empty,.loading{text-align:center;padding:4rem 0;color:var(--text3);font-size:14px;}
+footer{text-align:center;padding:2rem;font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:2rem;}
+
+@media(max-width:520px){
+  main{padding:1rem 1rem 2rem;}
+  header{padding:1rem;}
+  .card-image{width:90px;min-width:90px;}
+  .hero-title{font-size:22px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><img src="logo_wonderblocks.svg" alt="Wonderblocks"></div>
+  <div class="live-badge"><div class="live-dot"></div>Ao vivo</div>
+</header>
+
+<div class="hero">
+  <h1 class="hero-title">Radar de Ofertas LEGO</h1>
+  <p class="hero-sub">Melhores PPP selecionados agora · Atualizado em tempo real</p>
+</div>
+
+<main>
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="white" stroke-width="1.5"/><path d="M10 10l3 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="text" id="busca" placeholder="Buscar por nome ou nº do set..." oninput="renderLista()">
+      </div>
+      <select class="select-filter" id="ordem" onchange="renderLista()">
+        <option value="recente">Mais recentes</option>
+        <option value="desc-maior">Maior desconto</option>
+        <option value="desc-menor">Menor desconto</option>
+        <option value="ppp-menor">Melhor PPP</option>
+        <option value="ppp-maior">Pior PPP</option>
+        <option value="preco-menor">Menor preço</option>
+        <option value="preco-maior">Maior preço</option>
+      </select>
+      <select class="select-filter" id="filtro-loja" onchange="renderLista()">
+        <option value="todas">Todas as lojas</option>
+        <option value="Amazon">Amazon</option>
+        <option value="Amazon Global">Amazon Global</option>
+        <option value="Mercado Livre">Mercado Livre</option>
+        <option value="Magalu">Magalu</option>
+        <option value="Ri Happy">Ri Happy</option>
+        <option value="LEGO BR">LEGO BR</option>
+      </select>
+      <select class="select-filter" id="filtro-tema" onchange="renderLista()">
+        <option value="todos">Todos os temas</option>
+      </select>
+    </div>
+    <div class="toolbar-row">
+      <button class="filter-btn active" data-f="todos" onclick="filtrar(this,'todos')">Todos</button>
+      <button class="filter-btn" data-f="muitobom" onclick="filtrar(this,'muitobom')">🟦 Muito Bom</button>
+      <button class="filter-btn" data-f="bom" onclick="filtrar(this,'bom')">🟩 Bom</button>
+      <button class="filter-btn" data-f="media" onclick="filtrar(this,'media')">🟨 Na Média</button>
+      <button class="filter-btn" data-f="ruim" onclick="filtrar(this,'ruim')">🟥 Ruim</button>
+    </div>
+  </div>
+
+  <p class="count" id="count"></p>
+  <div class="offers-grid" id="grid"><div class="loading">Carregando ofertas...</div></div>
+</main>
+
+<footer>Wonderblocks — Radar de Ofertas LEGO</footer>
+
+<script>
+const SUPA_URL='https://rkqhjwskosftluxabsmt.supabase.co';
+const SUPA_KEY='sb_publishable_DUHT5KHlSX4hv2_kXCBqAQ_lleuU7Au';
+const LOJA_LOGOS={'amazon global':'logo_amazon.png','amazon':'logo_amazon.png','mercado livre':'logo_mercado_livre.png','magalu':'logo_magalu.png','ri happy':'logo_ri_happy.png','lego br':'logo_lego.png'};
+let todas=[],filtroAtivo='todos';
+
+function fmt(n,d){return Number(n).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function lojaLogo(l){if(!l)return null;const k=l.toLowerCase();for(const[n,v]of Object.entries(LOJA_LOGOS))if(k.includes(n))return v;return null;}
+function seloInfo(s){const v=(s||'').toLowerCase();if(v.includes('muito'))return{cls:'badge-mb',label:'MUITO BOM',card:'selo-muitobom',f:'muitobom'};if(v.includes('bom'))return{cls:'badge-bom',label:'BOM',card:'selo-bom',f:'bom'};if(v.includes('média')||v.includes('media'))return{cls:'badge-med',label:'NA MÉDIA',card:'selo-media',f:'media'};return{cls:'badge-ruim',label:'RUIM',card:'selo-ruim',f:'ruim'};}
+function timer(exp){if(!exp)return'';const d=new Date(exp)-new Date();if(d<=0)return'';const h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000);return h>0?`${h}h ${m}m`:`${m}m`;}
+
+function popularTemas(){
+  const temas=[...new Set(todas.map(o=>o.tema).filter(Boolean))].sort();
+  const sel=document.getElementById('filtro-tema');
+  const cur=sel.value;
+  sel.innerHTML='<option value="todos">Todos os temas</option>'+temas.map(t=>`<option value="${t}"${t===cur?' selected':''}>${t}</option>`).join('');
+}
+
+function filtrar(btn,tipo){
+  filtroAtivo=tipo;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLista();
+}
+
+function renderCard(o){
+  const info=seloInfo(o.selo);
+  const logo=lojaLogo(o.loja);
+  const t=timer(o.expires_at);
+  const nome=o.nome_set||'Oferta LEGO';
+  const nomeDisplay=o.numero_set?`${nome} <span class="card-num">(${o.numero_set})</span>`:nome;
+  const imgSrc=o.imagem_url||`https://img.bricklink.com/ItemImage/SN/0/${o.numero_set}-1.png`;
+  const imgHtml=(o.numero_set||o.imagem_url)
+    ?`<img src="${imgSrc}" alt="${nome}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src='https://img.bricklink.com/ItemImage/ON/0/${o.numero_set}-1.png';}else{this.parentElement.innerHTML='<div class=card-image-ph>🧱</div>';}">`
+    :`<div class="card-image-ph">🧱</div>`;
+  return`<div class="offer-card ${info.card}">
+    <div class="card-inner">
+      <div class="card-image">${imgHtml}</div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-name">${nomeDisplay}</div>
+          ${logo?`<div class="loja-icon"><img src="${logo}" alt="${o.loja}"></div>`:''}
+        </div>
+        <div class="card-metrics">
+          <div class="metric"><div class="metric-label">Desconto</div><div class="metric-value">${o.desconto_pct?Math.round(o.desconto_pct)+'%':'—'}</div></div>
+          <div class="metric"><div class="metric-label">PPP</div><div class="metric-value">R$${fmt(o.ppp,2)}</div></div>
+          <div class="metric"><div class="metric-label">Por</div><div class="metric-value">R$${fmt(o.preco_final,2)}</div></div>
+        </div>
+        <div class="card-footer">
+          <span class="badge ${info.cls}"><span class="badge-dot"></span>${info.label}</span>
+          ${o.tema?`<span class="badge badge-tema">${o.tema}</span>`:''}
+          ${o.cupom?`<span class="badge badge-cupom">🎟️ ${o.cupom}</span>`:''}
+          ${o.tag_historica?`<span class="badge badge-hist">⭐ ${o.tag_historica}</span>`:''}
+          ${t?`<span class="timer">⏱ ${t}</span>`:''}
+          ${o.link?`<a class="ver-btn" href="${o.link}" target="_blank" rel="noopener">Ver oferta</a>`:''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderLista(){
+  const q=(document.getElementById('busca').value||'').toLowerCase().trim();
+  const ordem=document.getElementById('ordem').value;
+  const lojaFiltro=document.getElementById('filtro-loja').value;
+  const temaFiltro=document.getElementById('filtro-tema').value;
+  const now=new Date();
+
+  let lista=todas.filter(o=>!o.pausado&&(!o.expires_at||new Date(o.expires_at)>now));
+  if(filtroAtivo!=='todos') lista=lista.filter(o=>seloInfo(o.selo).f===filtroAtivo);
+  if(lojaFiltro!=='todas') lista=lista.filter(o=>(o.loja||'')=== lojaFiltro);
+  if(temaFiltro!=='todos') lista=lista.filter(o=>(o.tema||'')===temaFiltro);
+  if(q) lista=lista.filter(o=>(o.nome_set||'').toLowerCase().includes(q)||(o.numero_set||'').includes(q));
+
+  if(ordem==='desc-maior') lista.sort((a,b)=>b.desconto_pct-a.desconto_pct);
+  else if(ordem==='desc-menor') lista.sort((a,b)=>a.desconto_pct-b.desconto_pct);
+  else if(ordem==='ppp-menor') lista.sort((a,b)=>a.ppp-b.ppp);
+  else if(ordem==='ppp-maior') lista.sort((a,b)=>b.ppp-a.ppp);
+  else if(ordem==='preco-menor') lista.sort((a,b)=>a.preco_final-b.preco_final);
+  else if(ordem==='preco-maior') lista.sort((a,b)=>b.preco_final-a.preco_final);
+
+  document.getElementById('count').textContent=lista.length?`${lista.length} oferta${lista.length>1?'s':''} ativa${lista.length>1?'s':''}`:' ';
+  document.getElementById('grid').innerHTML=lista.length?lista.map(renderCard).join(''):'<div class="empty">Nenhuma oferta no momento.</div>';
+}
+
+async function carregar(){
+  try{
+    const r=await fetch(`${SUPA_URL}/rest/v1/ofertas?ativo=eq.true&order=created_at.desc`,{headers:{'apikey':SUPA_KEY,'Authorization':`Bearer ${SUPA_KEY}`}});
+    todas=await r.json();
+    popularTemas();
+    renderLista();
+  }catch{document.getElementById('grid').innerHTML='<div class="empty">Erro ao carregar.</div>';}
+}
+carregar();
+setInterval(carregar,60000);
+setInterval(renderLista,30000);
+</script>
+</body>
+</html>
