@@ -790,11 +790,12 @@ async function apiGet(table,filter=''){
 async function carregarOfertas(){
   try{
     todasOfertas=await apiGet('ofertas','?order=created_at.desc');
+    console.log('Ofertas carregadas:',todasOfertas.length);
     atualizarBadges();
     renderTabela();
     renderSidebarCounts();
     popularFiltroTemas();
-  }catch(e){console.error(e);}
+  }catch(e){console.error('carregarOfertas error:',e);}
 }
 
 async function carregarBiblioteca(){
@@ -893,10 +894,12 @@ function renderTabela(){
   if(filtroSelo!=='todos') lista=lista.filter(o=>seloInfo(o.selo).f===filtroSelo);
   if(filtroTema){
     lista=lista.filter(o=>{
-      // Primeiro checa o tema da oferta, depois busca no set da biblioteca
       if(o.tema) return o.tema===filtroTema;
-      const setLib=_todosSetsBib.find(s=>s.numero_set===o.numero_set);
-      return setLib&&setLib.tema===filtroTema;
+      if(typeof _todosSetsBib!=='undefined'&&_todosSetsBib.length){
+        const setLib=_todosSetsBib.find(s=>s.numero_set===o.numero_set);
+        return setLib&&setLib.tema===filtroTema;
+      }
+      return false;
     });
   }
   if(q) lista=lista.filter(o=>(o.nome_set||'').toLowerCase().includes(q)||(o.numero_set||'').includes(q)||(o.tema||'').toLowerCase().includes(q));
