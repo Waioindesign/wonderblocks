@@ -1054,7 +1054,14 @@ async function salvarOferta(){
   const fraseFixa=fraseSelVal==='manual'?fraseManual:(fraseSelVal||'');
   const tema=document.getElementById('p-tema').value.trim();
 
-  if(!po||!pf||!pc){showToast('Preencha preço de, por e peças','#da3633');return;}
+  if(isNaN(po)||isNaN(pf)||isNaN(pc)||!pc){
+    const missing=[];
+    if(isNaN(po)||!po) missing.push('Preço de');
+    if(isNaN(pf)||!pf) missing.push('Preço por');
+    if(isNaN(pc)||!pc) missing.push('Peças');
+    showToast('Preencha: '+missing.join(', '),'#da3633');
+    return;
+  }
 
   const ppp=pf/pc,desc=Math.round(((po-pf)/po)*100),selo=classificar(ppp);
   const imgUrl=`https://images.brickset.com/sets/images/${num}-1.jpg`;
@@ -1078,7 +1085,7 @@ async function salvarOferta(){
     }
 
     // Salvar oferta
-    const payload={nome_set:nome||'Oferta LEGO',numero_set:num||null,imagem_url:imgUrl,preco_original:po,preco_final:pf,desconto_pct:desc,ppp:Math.round(ppp*100)/100,pecas:pc,mph:mph&&!isNaN(mph)?Math.round(mph*100)/100:null,selo,link:link||null,cupom:cupom||null,cupom_obs:cupomObs||null,cupom2:cupom2||null,cupom2_obs:cupom2Obs||null,frase_fixa:fraseFixa||null,tag_historica:tag||null,selo_card:seloCardSelecionado||null,loja,ativo:true,pausado:false,expires_at};
+    const payload={nome_set:nome||'Oferta LEGO',numero_set:num||null,imagem_url:imgUrl,preco_original:po,preco_final:pf,desconto_pct:desc,ppp:Math.round(ppp*100)/100,pecas:pc,selo,link:link||null,cupom:cupom||null,cupom_obs:cupomObs||null,cupom2:cupom2||null,cupom2_obs:cupom2Obs||null,frase_fixa:fraseFixa||null,tag_historica:tag||null,selo_card:seloCardSelecionado||null,loja,ativo:true,pausado:false,expires_at};
 
     if(editandoId){
       await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${editandoId}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
@@ -1093,7 +1100,10 @@ async function salvarOferta(){
     await carregarBiblioteca();
     // Auto-expand última oferta
     if(!editandoId&&todasOfertas.length>0){expandedId=todasOfertas[0].id;renderTabela();}
-  }catch(e){showToast('Erro ao salvar','#da3633');console.error(e);}
+  }catch(e){
+    showToast('Erro: '+e.message,'#da3633');
+    console.error('salvarOferta error:',e);
+  }
   btn.disabled=false; btn.textContent='Salvar Produto';
 }
 
