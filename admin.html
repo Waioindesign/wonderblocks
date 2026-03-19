@@ -461,7 +461,7 @@ select.field-input option{background:var(--bg3);}
         <div class="table-toolbar">
           <div class="table-search">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <input type="text" id="bib-search" placeholder="Buscar por nome ou número..." oninput="renderBiblioteca()">
+            <input type="text" id="bib-search" placeholder="Buscar por nome ou número..." oninput="renderBiblioteca()" onkeydown="if(event.key==='Enter')renderBiblioteca()">
           </div>
           <select class="btn-filtro" id="bib-tema" onchange="renderBiblioteca()" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;">
             <option value="">Todos os temas</option>
@@ -716,7 +716,20 @@ function showPage(p){
 
 // ── UTILS ──
 function fmt(n,d=2){return Number(n).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
-function parsePreco(v){if(!v&&v!==0)return NaN;let s=String(v).replace(/R\$/g,'').replace(/\s/g,'').trim();if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return parseFloat(s);}
+function parsePreco(v){
+  if(v===null||v===undefined||v==='')return NaN;
+  let s=String(v).replace(/R\$/g,'').replace(/\s/g,'').trim();
+  // BR format: 1.799,99 → has comma as decimal separator
+  if(s.includes(',') && s.includes('.')){
+    // 1.799,99 → remove dots (thousands sep) → replace comma → 1799.99
+    s=s.replace(/\./g,'').replace(',','.');
+  } else if(s.includes(',')){
+    // 799,99 → 799.99
+    s=s.replace(',','.');
+  }
+  // else already US format: 799.99 or 1799.99
+  return parseFloat(s);
+}
 function classificar(p){if(p<=0.60)return'MUITO BOM';if(p<=0.80)return'BOM';if(p<=1.10)return'NA MÉDIA';return'RUIM';}
 function seloInfo(s){const v=(s||'').toLowerCase();if(v.includes('muito'))return{cls:'b-mb',label:'MUITO BOM',f:'muitobom'};if(v.includes('bom'))return{cls:'b-bom',label:'BOM',f:'bom'};if(v.includes('média')||v.includes('media'))return{cls:'b-med',label:'NA MÉDIA',f:'media'};return{cls:'b-ruim',label:'RUIM',f:'ruim'};}
 function lojaByVal(v){return LOJAS.find(l=>l.value===v)||LOJAS[0];}
@@ -803,9 +816,14 @@ function filtrarLoja(loja){
   filtroLoja=loja;
   paginaAtual=1;
   document.getElementById('breadcrumb-loja').textContent=loja==='todas'?'Todas':loja;
-  // Update sidebar active
-  document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
-  if(loja==='todas') document.getElementById('nav-todas').classList.add('active');
+  // Update sidebar active state
+  document.querySelectorAll('#lojas-nav .sidebar-item, #nav-todas').forEach(el=>el.classList.remove('active'));
+  if(loja==='todas'){
+    document.getElementById('nav-todas').classList.add('active');
+  }else{
+    const items=document.querySelectorAll('#lojas-nav .sidebar-item');
+    items.forEach(el=>{if(el.textContent.trim().startsWith(loja))el.classList.add('active');});
+  }
   renderTabela();
   showPage('dashboard');
 }
@@ -915,17 +933,22 @@ function renderTabela(){
   }).join('');
 }
 
+let _todosSetsBib=[];
+
 function renderBiblioteca(sets){
-  if(!sets) return;
-  const q=(document.getElementById('bib-search')?.value||'').toLowerCase();
+  if(sets) _todosSetsBib=sets;
+  const q=(document.getElementById('bib-search')?.value||'').toLowerCase().trim();
   const tema=document.getElementById('bib-tema')?.value||'';
-  let lista=sets;
-  if(q) lista=lista.filter(s=>(s.nome||'').toLowerCase().includes(q)||(s.numero_set||'').includes(q));
+  let lista=[..._todosSetsBib];
+  if(q) lista=lista.filter(s=>(s.nome||'').toLowerCase().includes(q)||(s.numero_set||'').toLowerCase().includes(q)||(s.tema||'').toLowerCase().includes(q));
   if(tema) lista=lista.filter(s=>s.tema===tema);
   const tbody=document.getElementById('bib-body');
-  if(!lista.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧱</div>Nenhum set na biblioteca</div></td></tr>`;return;}
+  if(!lista.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧱</div>Nenhum set encontrado</div></td></tr>`;return;}
   tbody.innerHTML=lista.map(s=>{
     const img=s.imagem_url||`https://images.brickset.com/sets/images/${s.numero_set}-1.jpg`;
+    const nomeEsc=(s.nome||'').replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const imgEsc=(s.imagem_url||'').replace(/'/g,"\'");
+    const temaEsc=(s.tema||'').replace(/'/g,"\'");
     return`<tr>
       <td><div class="set-cell"><img class="set-thumb" src="${img}" alt="" onerror="this.onerror=null;this.src='https://img.bricklink.com/ItemImage/SN/0/${s.numero_set}-1.png'" loading="lazy"><div><div class="set-id">${s.numero_set}</div><div class="set-name">${s.nome}</div></div></div></td>
       <td style="font-size:12px;color:var(--text2);">${s.tema||'—'}</td>
@@ -933,12 +956,45 @@ function renderBiblioteca(sets){
       <td>${s.mph?'R$'+fmt(s.mph):'—'}</td>
       <td>${s.ano||'—'}</td>
       <td><div class="action-btns">
-        <button class="btn-icon edit" title="Nova oferta" onclick="novaOfertaDoSet('${s.numero_set}','${(s.nome||'').replace(/'/g,"\\'")}',${s.pecas||0},'${s.imagem_url||''}')">
+        <button class="btn-icon publish" title="Nova oferta" onclick="novaOfertaDoSet('${s.numero_set}','${nomeEsc}',${s.pecas||0},'${imgEsc}','${temaEsc}')">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="btn-icon edit" title="Editar set" onclick="editarSet('${s.id}','${s.numero_set}','${nomeEsc}','${temaEsc}',${s.pecas||0},${s.mph||0},'${imgEsc}')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3"/></svg>
+        </button>
+        <button class="btn-icon del" title="Excluir set" onclick="deletarSet('${s.id}','${s.numero_set}')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M5 4V2h6v2M6 7v5M10 7v5M4 4l1 9h6l1-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         </button>
       </div></td>
     </tr>`;
   }).join('');
+}
+
+function editarSet(id,num,nome,tema,pecas,mph,img){
+  limparPanel();
+  window._editandoSetId=id;
+  document.getElementById('p-num').value=num||'';
+  document.getElementById('p-nome').value=nome||'';
+  document.getElementById('p-tema').value=tema||'';
+  document.getElementById('p-pc').value=pecas||'';
+  document.getElementById('p-mph').value=mph||'';
+  if(img){
+    document.getElementById('set-found-img').src=img;
+    document.getElementById('set-found-nome').textContent=nome||'';
+    document.getElementById('set-found-pecas').textContent=pecas?pecas+' peças':'';
+    document.getElementById('set-found-bar').style.display='flex';
+  }
+  document.getElementById('p-btn-save').textContent='Salvar Set';
+  abrirPainel('Editar Set', false);
+}
+
+async function deletarSet(id,num){
+  if(!confirm(`Remover o set #${num} da biblioteca?`))return;
+  try{
+    await fetch(`${SUPA}/rest/v1/sets?id=eq.${id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});
+    showToast('Set removido','#da3633');
+    await carregarBiblioteca();
+  }catch(e){showToast('Erro ao remover','#da3633');}
 }
 
 function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
@@ -966,7 +1022,7 @@ function fecharPainel(){
 }
 
 function limparPanel(){
-  editandoId=null; seloCardSelecionado=''; window._editandoSetId=null;
+  editandoId=null; seloCardSelecionado=''; window._editandoSetId=null; window._editandoSetId=null;
   ['p-num','p-nome','p-tema','p-po','p-pf','p-pc','p-mph','p-link','p-cupom','p-cupom2','p-frase-manual'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['p-cupom-obs','p-cupom2-obs','p-frase-sel','p-tag'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('p-dur').value='24';
@@ -1101,6 +1157,19 @@ async function salvarOferta(){
         if(mph&&!isNaN(mph)) setPayload.mph=Math.round(mph*100)/100;
         await fetch(`${SUPA}/rest/v1/sets`,{method:'POST',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(setPayload)});
       }
+    }
+
+    // Auto-update MPH if new price is lower
+    if(num&&pf){
+      try{
+        const setData=await apiGet('sets',`?numero_set=eq.${num}`);
+        if(setData[0]){
+          const currentMph=setData[0].mph;
+          if(!currentMph||pf<currentMph){
+            await fetch(`${SUPA}/rest/v1/sets?numero_set=eq.${num}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({mph:Math.round(pf*100)/100})});
+          }
+        }
+      }catch{}
     }
 
     // Salvar oferta
