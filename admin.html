@@ -856,6 +856,8 @@ function renderSidebarCounts(){
 
 function filtrarLoja(loja){
   filtroLoja=loja;
+  filtroTema=''; // Reset tema filter on loja change
+  filtroSelo='todos'; // Reset selo filter too
   paginaAtual=1;
   document.getElementById('breadcrumb-loja').textContent=loja==='todas'?'Todas':loja;
   document.querySelectorAll('#lojas-nav .sidebar-item, #nav-todas').forEach(el=>el.classList.remove('active'));
@@ -865,6 +867,11 @@ function filtrarLoja(loja){
     const items=document.querySelectorAll('#lojas-nav .sidebar-item');
     items.forEach((el,i)=>{if(LOJAS[i]&&LOJAS[i].value===loja)el.classList.add('active');});
   }
+  // Reset visual state of pills and tema label
+  document.querySelectorAll('.stat-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.stat-pill[data-f="todos"]')?.classList.add('active');
+  const temaLabel=document.getElementById('filtro-tema-label');
+  if(temaLabel) temaLabel.textContent='Tema';
   renderTabela();
   showPage('dashboard');
 }
@@ -1339,9 +1346,18 @@ async function salvarOferta(){
 
     if(cupom) await salvarUltimoCupom(cupom,cupomObs);
     showToast(editandoId?'✓ Oferta atualizada!':'✓ Oferta adicionada!','#238636');
+    const lojaDoCard=loja;
     fecharPainel();
     await carregarOfertas();
     await carregarBiblioteca();
+    // Navegar para a loja da oferta salva e limpar filtros
+    filtroTema='';
+    filtroSelo='todos';
+    const temaLabel=document.getElementById('filtro-tema-label');
+    if(temaLabel) temaLabel.textContent='Tema';
+    document.querySelectorAll('.stat-pill').forEach(p=>p.classList.remove('active'));
+    document.querySelector('.stat-pill[data-f="todos"]')?.classList.add('active');
+    filtrarLoja(lojaDoCard);
     // Auto-expand última oferta
     if(!editandoId&&todasOfertas.length>0){expandedId=todasOfertas[0].id;renderTabela();}
   }catch(e){
