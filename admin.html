@@ -748,10 +748,12 @@ async function carregarBiblioteca(){
   try{
     const sets=await apiGet('sets','?order=nome.asc');
     renderBiblioteca(sets);
-    // Populate tema filter
+    // Populate tema filter - rebuild to avoid duplicates
     const temas=[...new Set(sets.map(s=>s.tema).filter(Boolean))].sort();
     const sel=document.getElementById('bib-tema');
-    temas.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+    const cur=sel.value;
+    while(sel.options.length>1) sel.remove(1);
+    temas.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===cur)o.selected=true;sel.appendChild(o);});
   }catch(e){console.error(e);}
 }
 
@@ -943,11 +945,18 @@ function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.chec
 function toggleExpand(id){expandedId=expandedId===id?null:id;renderTabela();}
 
 // ── PANEL ──
-function abrirPainel(titulo='Nova Oferta'){
+function abrirPainel(titulo='Nova Oferta', prefill=true){
   document.getElementById('panel-title').textContent=titulo;
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('slide-panel').classList.add('open');
-  if(ultimoCupom) document.getElementById('cupom-last-btn').style.display='block';
+  // Pre-fill last cupom when opening for new offer (not set edit)
+  if(prefill && !window._editandoSetId && !editandoId){
+    if(ultimoCupom){
+      document.getElementById('p-cupom').value=ultimoCupom;
+      document.getElementById('p-cupom-obs').value=ultimoCupomObs||'';
+    }
+    document.getElementById('cupom-last-btn').style.display=ultimoCupom?'block':'none';
+  }
 }
 
 function fecharPainel(){
@@ -957,7 +966,7 @@ function fecharPainel(){
 }
 
 function limparPanel(){
-  editandoId=null; seloCardSelecionado='';
+  editandoId=null; seloCardSelecionado=''; window._editandoSetId=null;
   ['p-num','p-nome','p-tema','p-po','p-pf','p-pc','p-mph','p-link','p-cupom','p-cupom2','p-frase-manual'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['p-cupom-obs','p-cupom2-obs','p-frase-sel','p-tag'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('p-dur').value='24';
@@ -1071,6 +1080,16 @@ async function salvarOferta(){
   btn.disabled=true; btn.textContent='Salvando...';
 
   try{
+    // If editing set only (from biblioteca)
+    if(window._editandoSetId){
+      const mph2=parsePreco(document.getElementById('p-mph').value);
+      const setPayload={nome,tema:tema||null,pecas:pc,mph:mph2&&!isNaN(mph2)?Math.round(mph2*100)/100:null};
+      await fetch(`${SUPA}/rest/v1/sets?id=eq.${window._editandoSetId}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(setPayload)});
+      showToast('✓ Set atualizado!','#238636');
+      fecharPainel();
+      await carregarBiblioteca();
+      btn.disabled=false; btn.textContent='Salvar Produto'; return;
+    }
     // Upsert set na biblioteca
     if(num&&nome){
       const existing=await apiGet('sets',`?numero_set=eq.${num}`);
@@ -1130,11 +1149,12 @@ function editarOferta(o){
   abrirPainel('Editar Oferta');
 }
 
-function novaOfertaDoSet(num,nome,pecas,img){
+function novaOfertaDoSet(num,nome,pecas,img,tema=''){
   limparPanel();
   document.getElementById('p-num').value=num;
   document.getElementById('p-nome').value=nome;
   document.getElementById('p-pc').value=pecas||'';
+  if(tema) document.getElementById('p-tema').value=tema;
   if(img){const bar=document.getElementById('set-found-bar');document.getElementById('set-found-img').src=img;document.getElementById('set-found-nome').textContent=nome;document.getElementById('set-found-pecas').textContent=pecas?`${pecas} peças`:'';bar.style.display='flex';}
   abrirPainel('Nova Oferta');
   showPage('dashboard');
