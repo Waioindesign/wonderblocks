@@ -1279,12 +1279,14 @@ async function salvarOferta(){
   try{
     // Verificar duplicata (mesmo set + mesma loja) se não for edição
     if(!editandoId && num && loja){
-      const existing=await apiGet('ofertas',`?numero_set=eq.${num}&loja=eq.${loja}&ativo=eq.true&limit=1`);
-      if(existing.length>0){
-        const confirmar=confirm(`Já existe uma oferta do set #${num} na loja ${loja}.\n\nDeseja substituir a oferta existente com os novos dados?`);
-        if(!confirmar){btn.disabled=false;btn.textContent='Salvar Produto';return;}
-        await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${existing[0].id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});
-      }
+      try{
+        const existing=await apiGet('ofertas','?numero_set=eq.'+encodeURIComponent(num)+'&loja=eq.'+encodeURIComponent(loja)+'&limit=1');
+        if(existing&&existing.length>0){
+          const confirmar=confirm('Já existe uma oferta do set #'+num+' na loja '+loja+'.\n\nDeseja substituir?');
+          if(!confirmar){btn.disabled=false;btn.textContent='Salvar Produto';return;}
+          await fetch(SUPA+'/rest/v1/ofertas?id=eq.'+existing[0].id,{method:'DELETE',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
+        }
+      }catch(dupErr){console.warn('Duplicate check skipped:',dupErr);}
     }
 
     // If editing set only (from biblioteca)
