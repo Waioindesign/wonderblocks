@@ -247,6 +247,9 @@ select.field-input option{background:var(--bg3);}
 
 /* EMPTY / LOADING */
 .empty-state,.loading-state{text-align:center;padding:4rem 1rem;color:var(--text3);}
+.dd-opt{padding:8px 14px;font-size:13px;color:var(--text2);cursor:pointer;transition:background .1s;}
+.dd-opt:hover{background:var(--bg3);color:var(--text);}
+.dd-opt.active{color:var(--blue3);}
 .empty-icon{font-size:36px;margin-bottom:12px;}
 
 /* TOAST */
@@ -402,10 +405,31 @@ select.field-input option{background:var(--bg3);}
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <input type="text" id="table-search" placeholder="Procure por id, nome ou tema..." oninput="renderTabela()">
           </div>
-          <button class="btn-filtro">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            Filtro
-          </button>
+          <div style="position:relative;">
+            <button class="btn-filtro" id="btn-filtro-tema" onclick="toggleDropdown('dd-filtro-tema')">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span id="filtro-tema-label">Tema</span>
+            </button>
+            <div id="dd-filtro-tema" style="display:none;position:absolute;top:calc(100%+4px);left:0;min-width:200px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);z-index:50;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.4);">
+              <div style="padding:4px 0;" id="filtro-tema-options"></div>
+            </div>
+          </div>
+          <div style="position:relative;">
+            <button class="btn-filtro" id="btn-ordenar" onclick="toggleDropdown('dd-ordenar')">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4v8M4 12l-2-2m2 2l2-2M12 4v8M12 4l-2 2m2-2l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <span id="ordenar-label">Ordenar</span>
+            </button>
+            <div id="dd-ordenar" style="display:none;position:absolute;top:calc(100%+4px);left:0;min-width:200px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);z-index:50;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.4);">
+              <div style="padding:4px 0;">
+                <div class="dd-opt" onclick="aplicarOrdem('','Ordenar')">— Padrão (mais recente)</div>
+                <div class="dd-opt" onclick="aplicarOrdem('desconto_desc','Maior desconto')">↓ Maior desconto</div>
+                <div class="dd-opt" onclick="aplicarOrdem('desconto_asc','Menor desconto')">↑ Menor desconto</div>
+                <div class="dd-opt" onclick="aplicarOrdem('ppp_asc','Menor PPP')">↓ Menor PPP</div>
+                <div class="dd-opt" onclick="aplicarOrdem('ppp_desc','Maior PPP')">↑ Maior PPP</div>
+                <div class="dd-opt" onclick="aplicarOrdem('mph_asc','Menor MPH')">↓ Menor MPH</div>
+              </div>
+            </div>
+          </div>
           <button class="btn-add" onclick="abrirPainel()">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             Adicionar
@@ -579,33 +603,37 @@ select.field-input option{background:var(--bg3);}
         </div>
         <input type="hidden" id="p-loja" value="Amazon">
       </div>
-      <div>
-        <label class="field-label">Observação do cupom</label>
-        <select class="field-input" id="p-cupom-obs">
-          <option value="">Sem observação</option>
-          <option value="Exclusivo Prime">⭐ Exclusivo Prime</option>
-          <option value="Somente no app">📱 Somente no app</option>
-          <option value="Exclusivo Meli+">🟡 Exclusivo Meli+</option>
-        </select>
-      </div>
+<div></div>
     </div>
     <div class="panel-full">
       <label class="field-label">Cupom 1</label>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
         <input type="text" class="field-input" id="p-cupom" placeholder="Ex: TOYS20" style="flex:1;text-transform:uppercase;">
-        <span class="cupom-last" id="cupom-last-btn" onclick="usarUltimoCupom()" style="display:none;">↩ Último cupom</span>
+        <span class="cupom-last" id="cupom-last-btn" onclick="usarUltimoCupom()" style="display:none;">↩ Último</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <select class="field-input" id="p-cupom-obs" onchange="toggleCupomFrase(1)" style="flex:1;">
+          <option value="">— Selecionar frase —</option>
+          <option value="custom">✏️ Personalizar...</option>
+          <option value="resgate na página do produto">resgate na página do produto</option>
+          <option value="resgate antecipadamente no site">resgate antecipadamente no site</option>
+        </select>
+        <input type="text" class="field-input" id="p-cupom-obs-custom" placeholder="Ex: (12% OFF)" style="flex:1;display:none;">
       </div>
     </div>
     <div class="panel-full">
       <label class="field-label">Cupom 2 (opcional)</label>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:6px;">
         <input type="text" class="field-input" id="p-cupom2" placeholder="Ex: EXTRA10" style="flex:1;text-transform:uppercase;">
-        <select class="field-input" id="p-cupom2-obs" style="flex:1;">
-          <option value="">Sem obs.</option>
-          <option value="Exclusivo Prime">⭐ Prime</option>
-          <option value="Somente no app">📱 App</option>
-          <option value="Exclusivo Meli+">🟡 Meli+</option>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <select class="field-input" id="p-cupom2-obs" onchange="toggleCupomFrase(2)" style="flex:1;">
+          <option value="">— Selecionar frase —</option>
+          <option value="custom">✏️ Personalizar...</option>
+          <option value="resgate na página do produto">resgate na página do produto</option>
+          <option value="resgate antecipadamente no site">resgate antecipadamente no site</option>
         </select>
+        <input type="text" class="field-input" id="p-cupom2-obs-custom" placeholder="Ex: (20% OFF no App)" style="flex:1;display:none;">
       </div>
     </div>
 
@@ -669,6 +697,12 @@ const LOJAS=[
   {value:'LEGO BR',logo:'logo_lego.png',frame:'assets/frame_lego.jpg'},
 ];
 const SELOS_CARD={'MUITO BOM':'assets/muito_bom.png','BOM':'assets/bom.png','NA MÉDIA':'assets/regular.png','RUIM':'assets/ruim.png'};
+const TAG_SVGS={
+  'Melhor preço histórico':'assets/melhor_preco_historico.svg',
+  'Melhor preço 30 dias':'assets/menor_preco_30.svg',
+  'Melhor preço 60 dias':'assets/menor_preco_60.svg',
+  'Melhor preço 90 dias':'assets/menor_preco_90.svg',
+};
 const FRASES={'MUITO BOM':['🚨 EXCELENTE PPP!!!','🚨 ÓTIMO VALOR POR PEÇA!!!','🚨 PREÇO MUITO BOM!','🚨 ESSE TÁ VALENDO MUITO!','🚨 PPP MUITO BOM!','🚨 ÓTIMO PREÇO!'],'BOM':['🚨 BOM PPP!!!','🚨 ÓTIMO VALOR POR PEÇA!!!','🚨 PPP BEM INTERESSANTE!','🚨 ESSE VALE MUITO!','🚨 BOM PREÇO POR PEÇA!','🚨 PREÇO BOM DEMAIS!'],'NA MÉDIA':['🚨 PREÇO POR PEÇA OK!','🚨 PPP NA MÉDIA!','🚨 PREÇO POR PEÇA (REGULAR)'],'RUIM':['🚨 PREÇO POR PEÇA ACIMA - EXIGE ATENÇÃO!','🚨 PPP ELEVADO (SET INTERESSANTE)','🚨 PREÇO POR PEÇA (RUIM)','🚨 VALOR ALTO NO PPP']};
 
 let todasOfertas=[],filtroLoja='todas',filtroSelo='todos',sortCol='',sortAsc=true,paginaAtual=1,editandoId=null,seloCardSelecionado='',expandedId=null,ultimoCupom='',ultimoCupomObs='';
@@ -754,6 +788,7 @@ async function carregarOfertas(){
     atualizarBadges();
     renderTabela();
     renderSidebarCounts();
+    popularFiltroTemas();
   }catch(e){console.error(e);}
 }
 
@@ -851,8 +886,18 @@ function renderTabela(){
   let lista=[...todasOfertas];
   if(filtroLoja!=='todas') lista=lista.filter(o=>o.loja===filtroLoja);
   if(filtroSelo!=='todos') lista=lista.filter(o=>seloInfo(o.selo).f===filtroSelo);
+  if(filtroTema) lista=lista.filter(o=>(o.tema||'')=== filtroTema);
   if(q) lista=lista.filter(o=>(o.nome_set||'').toLowerCase().includes(q)||(o.numero_set||'').includes(q));
+  // Column sort
   if(sortCol){lista.sort((a,b)=>{let av=a[sortCol==='nome'?'nome_set':sortCol==='preco'?'preco_final':sortCol==='desconto'?'desconto_pct':sortCol]||0;let bv=b[sortCol==='nome'?'nome_set':sortCol==='preco'?'preco_final':sortCol==='desconto'?'desconto_pct':sortCol]||0;return sortAsc?(av>bv?1:-1):(av<bv?1:-1);});}
+  // Dropdown order
+  else if(ordemAtual){
+    const [col,dir]=ordemAtual.split('_');
+    const asc=dir==='asc';
+    const key=col==='desconto'?'desconto_pct':col==='mph'?'mph':col;
+    lista.sort((a,b)=>{const av=a[key]||0,bv=b[key]||0;return asc?(av>bv?1:-1):(av<bv?1:-1);});
+  }
+  popularFiltroTemas();
   const total=lista.length;
   const pages=Math.ceil(total/perPage);
   if(paginaAtual>pages) paginaAtual=1;
@@ -914,7 +959,7 @@ function renderTabela(){
         <div class="expand-preview" id="expand-prev-${o.id}"><div class="expand-preview-ph">Clique em<br>"Gerar card"</div></div>
         <div class="expand-actions">
           <div class="expand-title">Publicar oferta</div>
-          <button class="btn-publish-action btn-gen-card" id="btn-gen-${o.id}" onclick="gerarCard('${o.id}','${o.loja||'Amazon'}','${info.label}','${imgSrc}','${imgFb}')">
+          <button class="btn-publish-action btn-gen-card" id="btn-gen-${o.id}" onclick="gerarCard('${o.id}','${o.loja||'Amazon'}','${info.label}','${imgSrc}','${imgFb}','${o.tag_historica||''}')">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             Gerar card
           </button>
@@ -998,6 +1043,49 @@ async function deletarSet(id,num){
 }
 
 function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);}
+
+// ── DROPDOWNS ──
+let filtroTema='', ordemAtual='';
+function toggleDropdown(id){
+  const dd=document.getElementById(id);
+  // Close all other dropdowns first
+  ['dd-filtro-tema','dd-ordenar'].forEach(did=>{if(did!==id)document.getElementById(did).style.display='none';});
+  dd.style.display=dd.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#btn-filtro-tema')&&!e.target.closest('#dd-filtro-tema'))
+    document.getElementById('dd-filtro-tema').style.display='none';
+  if(!e.target.closest('#btn-ordenar')&&!e.target.closest('#dd-ordenar'))
+    document.getElementById('dd-ordenar').style.display='none';
+});
+
+function popularFiltroTemas(){
+  const temas=[...new Set(todasOfertas.map(o=>o.tema||'').filter(Boolean))].sort();
+  const container=document.getElementById('filtro-tema-options');
+  if(!container)return;
+  container.innerHTML='<div class="dd-opt'+(filtroTema===''?' active':'')+'" onclick="aplicarTema('','Tema')">— Todos os temas</div>'
+    +temas.map(t=>`<div class="dd-opt${filtroTema===t?' active':''}" onclick="aplicarTema('${t}','${t}')">${t}</div>`).join('');
+}
+
+function aplicarTema(tema,label){
+  filtroTema=tema;
+  document.getElementById('filtro-tema-label').textContent=label||'Tema';
+  document.getElementById('dd-filtro-tema').style.display='none';
+  paginaAtual=1; renderTabela();
+  popularFiltroTemas();
+}
+
+function aplicarOrdem(ordem,label){
+  ordemAtual=ordem;
+  sortCol=''; // reset column sort
+  document.getElementById('ordenar-label').textContent=label;
+  document.getElementById('dd-ordenar').style.display='none';
+  paginaAtual=1; renderTabela();
+  // Mark active
+  document.querySelectorAll('#dd-ordenar .dd-opt').forEach(el=>{
+    el.classList.toggle('active', el.textContent.includes(label)&&label!=='Ordenar');
+  });
+}
 function toggleExpand(id){expandedId=expandedId===id?null:id;renderTabela();}
 
 // ── PANEL ──
@@ -1025,6 +1113,7 @@ function limparPanel(){
   editandoId=null; seloCardSelecionado=''; window._editandoSetId=null; window._editandoSetId=null;
   ['p-num','p-nome','p-tema','p-po','p-pf','p-pc','p-mph','p-link','p-cupom','p-cupom2','p-frase-manual'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['p-cupom-obs','p-cupom2-obs','p-frase-sel','p-tag'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['p-cupom-obs-custom','p-cupom2-obs-custom'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.style.display='none';}});
   document.getElementById('p-dur').value='24';
   document.getElementById('ppp-prev').style.display='none';
   document.getElementById('set-found-bar').style.display='none';
@@ -1049,6 +1138,21 @@ document.addEventListener('click',e=>{if(!e.target.closest('#p-loja-dd'))documen
 function toggleFraseManual(){
   const v=document.getElementById('p-frase-sel').value;
   document.getElementById('p-frase-manual').style.display=v==='manual'?'block':'none';
+}
+
+function toggleCupomFrase(n){
+  const sel=document.getElementById(`p-cupom${n>1?n:''}-obs`);
+  const custom=document.getElementById(`p-cupom${n>1?n:''}-obs-custom`);
+  if(!sel||!custom)return;
+  custom.style.display=sel.value==='custom'?'flex':'none';
+}
+
+function getCupomObs(n){
+  const sel=document.getElementById(`p-cupom${n>1?n:''}-obs`);
+  const custom=document.getElementById(`p-cupom${n>1?n:''}-obs-custom`);
+  if(!sel)return'';
+  if(sel.value==='custom') return custom?custom.value.trim():'';
+  return sel.value||'';
 }
 
 function selecionarSelo(el){
@@ -1108,9 +1212,9 @@ async function salvarOferta(){
   const mph=parsePreco(document.getElementById('p-mph').value);
   const link=document.getElementById('p-link').value.trim();
   const cupom=document.getElementById('p-cupom').value.trim().toUpperCase();
-  const cupomObs=document.getElementById('p-cupom-obs').value;
+  const cupomObs=getCupomObs(1);
   const cupom2=document.getElementById('p-cupom2').value.trim().toUpperCase();
-  const cupom2Obs=document.getElementById('p-cupom2-obs').value;
+  const cupom2Obs=getCupomObs(2);
   const loja=document.getElementById('p-loja').value;
   const tag=document.getElementById('p-tag').value;
   const dur=parseInt(document.getElementById('p-dur').value);
@@ -1136,6 +1240,16 @@ async function salvarOferta(){
   btn.disabled=true; btn.textContent='Salvando...';
 
   try{
+    // Verificar duplicata (mesmo set + mesma loja) se não for edição
+    if(!editandoId && num && loja){
+      const existing=await apiGet('ofertas',`?numero_set=eq.${num}&loja=eq.${loja}&ativo=eq.true&limit=1`);
+      if(existing.length>0){
+        const confirmar=confirm(`Já existe uma oferta do set #${num} na loja ${loja}.\n\nDeseja substituir a oferta existente com os novos dados?`);
+        if(!confirmar){btn.disabled=false;btn.textContent='Salvar Produto';return;}
+        await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${existing[0].id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});
+      }
+    }
+
     // If editing set only (from biblioteca)
     if(window._editandoSetId){
       const mph2=parsePreco(document.getElementById('p-mph').value);
@@ -1205,9 +1319,17 @@ function editarOferta(o){
   document.getElementById('p-mph').value=o.mph||'';
   document.getElementById('p-link').value=o.link||'';
   document.getElementById('p-cupom').value=o.cupom||'';
-  document.getElementById('p-cupom-obs').value=o.cupom_obs||'';
+  // Restore cupom obs
+  const setCupomObs=(n,val)=>{
+    const sel=document.getElementById(`p-cupom${n>1?n:''}-obs`);
+    const custom=document.getElementById(`p-cupom${n>1?n:''}-obs-custom`);
+    if(!sel||!val)return;
+    const opt=Array.from(sel.options).find(o=>o.value===val);
+    if(opt){sel.value=val;}else{sel.value='custom';if(custom){custom.value=val;custom.style.display='flex';}}
+  };
+  setCupomObs(1,o.cupom_obs||'');
   document.getElementById('p-cupom2').value=o.cupom2||'';
-  document.getElementById('p-cupom2-obs').value=o.cupom2_obs||'';
+  setCupomObs(2,o.cupom2_obs||'');
   document.getElementById('p-tag').value=o.tag_historica||'';
   document.getElementById('p-tema').value=o.tema||'';
   selecionarLoja(o.loja||'Amazon');
@@ -1237,7 +1359,7 @@ async function deletarOferta(id){
 // ── CARD GENERATOR ──
 function loadImg(src){return new Promise((res,rej)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>res(img);img.onerror=()=>rej(new Error('img fail'));img.src=src+'?t='+Date.now();});}
 
-async function gerarCard(id,loja,selo,imgUrl,imgFb){
+async function gerarCard(id,loja,selo,imgUrl,imgFb,tagHistorica){
   const btn=document.getElementById(`btn-gen-${id}`);
   const status=document.getElementById(`expand-status-${id}`);
   const prev=document.getElementById(`expand-prev-${id}`);
@@ -1247,11 +1369,11 @@ async function gerarCard(id,loja,selo,imgUrl,imgFb){
     const ctx=canvas.getContext('2d');
     ctx.clearRect(0,0,1000,1000);
     ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,1000,1000);
-    // Frame
+    // Frame da loja
     const lojaObj=lojaByVal(loja);
     const frame=await loadImg(lojaObj.frame);
     ctx.drawImage(frame,0,0,1000,1000);
-    // Product image proportional
+    // Imagem do produto proporcional centralizada
     const urls=[imgUrl,imgFb].filter(Boolean);
     let prodImg=null;
     for(const u of urls){try{prodImg=await loadImg(u);break;}catch{}}
@@ -1262,10 +1384,21 @@ async function gerarCard(id,loja,selo,imgUrl,imgFb){
       if(h>maxH){w=Math.round(w*(maxH/h));h=maxH;}
       ctx.drawImage(prodImg,Math.round((1000-w)/2),Math.round((1000-h)/2)-20,w,h);
     }
-    // Selo PPP
+    // Selo PPP — canto superior direito 40px margem
     const seloFile=SELOS_CARD[selo]||'assets/bom.png';
     try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-40,40,220,220);}catch{}
-    // Preview
+    // Tag histórica — canto superior esquerdo 40px margem (SVG via Image)
+    if(tagHistorica&&TAG_SVGS[tagHistorica]){
+      try{
+        const tagImg=await loadImg(TAG_SVGS[tagHistorica]);
+        // Manter proporção do SVG, max 320px largura
+        const maxTW=320;
+        const ratio=tagImg.naturalWidth>0?tagImg.naturalHeight/tagImg.naturalWidth:0.25;
+        const tw=maxTW, th=Math.round(maxTW*ratio)||80;
+        ctx.drawImage(tagImg,40,40,tw,th);
+      }catch(e){console.warn('Tag SVG error:',e);}
+    }
+    // Preview inline
     const pc=document.createElement('canvas');pc.width=1000;pc.height=1000;pc.getContext('2d').drawImage(canvas,0,0);pc.style.cssText='width:100%;height:100%;display:block;border-radius:8px;';
     prev.innerHTML='';prev.appendChild(pc);
     document.getElementById(`btn-cimg-${id}`).style.display='flex';
@@ -1286,43 +1419,55 @@ async function copiarImagem(id){
 }
 
 function copiarWhatsApp(o){
-  const ppp=o.ppp,desc=Math.round(o.desconto_pct||0),po=Number(o.preco_original),pf=Number(o.preco_final),pc=o.pecas||0;
-  const seloEmoji=()=>{const s=(o.selo||'').toLowerCase();if(s.includes('muito'))return'🟦 MUITO BOM';if(s.includes('bom'))return'🟩 BOM';if(s.includes('média')||s.includes('media'))return'🟨 NA MÉDIA';return'🟥 RUIM';};
+  const ppp=o.ppp, desc=Math.round(o.desconto_pct||0);
+  const po=Number(o.preco_original), pf=Number(o.preco_final), pc=o.pecas||0;
+
+  // Selo com círculos
+  const seloEmoji=(s)=>{const v=(s||'').toLowerCase();if(v.includes('muito'))return'🔵 MUITO BOM';if(v.includes('bom'))return'🟢 BOM';if(v.includes('média')||v.includes('media'))return'🟡 NA MÉDIA';return'🔴 RUIM';};
+
+  // Frase abertura
   const arr=FRASES[o.selo]||FRASES['BOM'];
   const frase=o.frase_fixa||arr[Math.floor(Math.random()*arr.length)];
-  const rodapeMap={
-    'Amazon':'_(Vendido e entregue pela Amazon)_',
-    'Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_',
-    'Magalu':'_(Vendido e entregue pela Magalu)_',
-    'Mercado Livre':'_(Vendido e entregue pela LEGO Oficial no ML)_',
-    'Ri Happy':'_(Vendido e entregue pela Ri Happy)_',
-    'LEGO BR':'_(Vendido e entregue pela LEGO Shop Brasil)_',
-  };
+
+  // Rodapé por loja
+  const rodapeMap={'Amazon':'_(Vendido e entregue pela Amazon)_','Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_','Magalu':'_(Vendido e entregue pela Magalu)_','Mercado Livre':'_(Vendido e entregue pela LEGO Oficial no ML)_','Ri Happy':'_(Vendido e entregue pela Ri Happy)_','LEGO BR':'_(Vendido e entregue pela LEGO Shop Brasil)_'};
   const rodape=rodapeMap[o.loja]||'_(Vendido e entregue pela Amazon)_';
-  function linhasCupom(c,obs){if(!c)return[];return [`🎟️ Use o cupom: *${c}*${obs?` (${obs})`:''}  resgate na página do produto.`];}
-  const isDestaque=(o.selo||'').toLowerCase().includes('muito')||(o.selo||'').toLowerCase()==='bom';
+
+  // Linha de cupom: 🎟️ CUPOM: *NOME* frase
+  function linhaCupom(c, frase_c){
+    if(!c) return null;
+    const fr=frase_c?` ${frase_c}`:'';
+    return `🎟️ CUPOM: *${c}*${fr}`;
+  }
+
   const L=[];
   L.push(frase);
-  if(isDestaque){
-    linhasCupom(o.cupom,o.cupom_obs).forEach(l=>L.push(l));
-    linhasCupom(o.cupom2,o.cupom2_obs).forEach(l=>L.push(l));
-    if(o.link)L.push(`👉 ${o.link}`);
-    L.push('');
-  }
-  if(o.numero_set)L.push(`📦 ${o.numero_set}`);
-  L.push(`🎟️ ${desc}% OFF`);
-  if(!isDestaque){
-    linhasCupom(o.cupom,o.cupom_obs).forEach(l=>L.push(l));
-    linhasCupom(o.cupom2,o.cupom2_obs).forEach(l=>L.push(l));
-    if(o.link)L.push(`👉 ${o.link}`);
-  }
+
+  // Cupons logo após frase
+  const lc1=linhaCupom(o.cupom, o.cupom_obs);
+  const lc2=linhaCupom(o.cupom2, o.cupom2_obs);
+  if(lc1) L.push(lc1);
+  if(lc2) L.push(lc2);
+
+  // Link
+  if(o.link) L.push(`👉 ${o.link}`);
+
+  // Linha em branco após link
+  L.push('');
+
+  // Dados do produto numa linha
+  L.push(`🏷️ ${desc}% OFF   |   📦 #${o.numero_set||''}`);
   L.push(`💸 De: R$${fmt(po)}`);
   L.push(`🔥 Por: R$${fmt(pf)}`);
-  if(pc)L.push(`🧩 Peças: ${pc}`);
+  if(pc) L.push(`🧩 Peças: ${pc}`);
   L.push(`🫰 PPP: R$ ${fmt(ppp)}/peça`);
-  L.push(seloEmoji());
-  L.push('');L.push(rodape);
-  navigator.clipboard.writeText(L.join('\n')).then(()=>showToast('✓ Texto copiado para o WhatsApp!','#238636'));
+  L.push(seloEmoji(o.selo));
+
+  // Linha em branco antes do rodapé
+  L.push('');
+  L.push(rodape);
+
+  navigator.clipboard.writeText(L.join('\n')).then(()=>showToast('✓ Texto copiado!','#238636'));
 }
 </script>
 </body>
