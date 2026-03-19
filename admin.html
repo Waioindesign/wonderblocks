@@ -822,7 +822,7 @@ function filtrarLoja(loja){
     document.getElementById('nav-todas').classList.add('active');
   }else{
     const items=document.querySelectorAll('#lojas-nav .sidebar-item');
-    items.forEach(el=>{if(el.textContent.trim().startsWith(loja))el.classList.add('active');});
+    items.forEach((el,i)=>{if(LOJAS[i]&&LOJAS[i].value===loja)el.classList.add('active');});
   }
   renderTabela();
   showPage('dashboard');
@@ -1290,8 +1290,15 @@ function copiarWhatsApp(o){
   const seloEmoji=()=>{const s=(o.selo||'').toLowerCase();if(s.includes('muito'))return'🟦 MUITO BOM';if(s.includes('bom'))return'🟩 BOM';if(s.includes('média')||s.includes('media'))return'🟨 NA MÉDIA';return'🟥 RUIM';};
   const arr=FRASES[o.selo]||FRASES['BOM'];
   const frase=o.frase_fixa||arr[Math.floor(Math.random()*arr.length)];
-  const isML=o.loja&&o.loja.toLowerCase().includes('mercado');
-  const rodape=isML?'_(Vendido e entregue pela LEGO Oficial no ML)_':'_(Vendido e entregue pela Amazon)_';
+  const rodapeMap={
+    'Amazon':'_(Vendido e entregue pela Amazon)_',
+    'Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_',
+    'Magalu':'_(Vendido e entregue pela Magalu)_',
+    'Mercado Livre':'_(Vendido e entregue pela LEGO Oficial no ML)_',
+    'Ri Happy':'_(Vendido e entregue pela Ri Happy)_',
+    'LEGO BR':'_(Vendido e entregue pela LEGO Shop Brasil)_',
+  };
+  const rodape=rodapeMap[o.loja]||'_(Vendido e entregue pela Amazon)_';
   function linhasCupom(c,obs){if(!c)return[];return [`🎟️ Use o cupom: *${c}*${obs?` (${obs})`:''}  resgate na página do produto.`];}
   const isDestaque=(o.selo||'').toLowerCase().includes('muito')||(o.selo||'').toLowerCase()==='bom';
   const L=[];
