@@ -508,6 +508,20 @@ select.field-input option{background:var(--bg3);}
             </tbody>
           </table>
         </div>
+        <div class="table-footer">
+          <span id="bib-footer-info" style="color:var(--text3);font-size:13px;">0 sets</span>
+          <div style="display:flex;align-items:center;gap:1rem;">
+            <div class="per-page">
+              Itens por pág.
+              <select id="bib-per-page" onchange="_paginaBib=1;renderBiblioteca()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--text);outline:none;">
+                <option value="15">15</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+            <div class="pagination" id="bib-pagination"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -843,7 +857,6 @@ function filtrarLoja(loja){
   filtroLoja=loja;
   paginaAtual=1;
   document.getElementById('breadcrumb-loja').textContent=loja==='todas'?'Todas':loja;
-  // Update sidebar active state
   document.querySelectorAll('#lojas-nav .sidebar-item, #nav-todas').forEach(el=>el.classList.remove('active'));
   if(loja==='todas'){
     document.getElementById('nav-todas').classList.add('active');
@@ -878,8 +891,15 @@ function renderTabela(){
   let lista=[...todasOfertas];
   if(filtroLoja!=='todas') lista=lista.filter(o=>o.loja===filtroLoja);
   if(filtroSelo!=='todos') lista=lista.filter(o=>seloInfo(o.selo).f===filtroSelo);
-  if(filtroTema) lista=lista.filter(o=>(o.tema||'')=== filtroTema);
-  if(q) lista=lista.filter(o=>(o.nome_set||'').toLowerCase().includes(q)||(o.numero_set||'').includes(q));
+  if(filtroTema){
+    lista=lista.filter(o=>{
+      // Primeiro checa o tema da oferta, depois busca no set da biblioteca
+      if(o.tema) return o.tema===filtroTema;
+      const setLib=_todosSetsBib.find(s=>s.numero_set===o.numero_set);
+      return setLib&&setLib.tema===filtroTema;
+    });
+  }
+  if(q) lista=lista.filter(o=>(o.nome_set||'').toLowerCase().includes(q)||(o.numero_set||'').includes(q)||(o.tema||'').toLowerCase().includes(q));
   // Column sort
   if(sortCol){lista.sort((a,b)=>{let av=a[sortCol==='nome'?'nome_set':sortCol==='preco'?'preco_final':sortCol==='desconto'?'desconto_pct':sortCol]||0;let bv=b[sortCol==='nome'?'nome_set':sortCol==='preco'?'preco_final':sortCol==='desconto'?'desconto_pct':sortCol]||0;return sortAsc?(av>bv?1:-1):(av<bv?1:-1);});}
   // Dropdown order
@@ -972,6 +992,7 @@ function renderTabela(){
 
 let _todosSetsBib=[];
 
+let _paginaBib=1;
 function renderBiblioteca(sets){
   if(sets) _todosSetsBib=sets;
   const q=(document.getElementById('bib-search')?.value||'').toLowerCase().trim();
@@ -979,6 +1000,23 @@ function renderBiblioteca(sets){
   let lista=[..._todosSetsBib];
   if(q) lista=lista.filter(s=>(s.nome||'').toLowerCase().includes(q)||(s.numero_set||'').toLowerCase().includes(q)||(s.tema||'').toLowerCase().includes(q));
   if(tema) lista=lista.filter(s=>s.tema===tema);
+  const perPage=parseInt(document.getElementById('bib-per-page')?.value||'20');
+  const total=lista.length;
+  const pages=Math.ceil(total/perPage)||1;
+  if(_paginaBib>pages) _paginaBib=1;
+  const start=(_paginaBib-1)*perPage;
+  lista=lista.slice(start,start+perPage);
+  // Update footer
+  const footerInfo=document.getElementById('bib-footer-info');
+  if(footerInfo) footerInfo.textContent=`${start+1}–${Math.min(start+perPage,total)} de ${total} Sets`;
+  // Pagination buttons
+  const pag=document.getElementById('bib-pagination');
+  if(pag){
+    pag.innerHTML='';
+    const prev=document.createElement('button');prev.className='page-btn';prev.innerHTML='‹';prev.onclick=()=>{if(_paginaBib>1){_paginaBib--;renderBiblioteca();}};pag.appendChild(prev);
+    for(let i=1;i<=Math.min(pages,5);i++){const b=document.createElement('button');b.className='page-btn'+(i===_paginaBib?' active':'');b.textContent=i;b.onclick=(()=>{const p=i;return()=>{_paginaBib=p;renderBiblioteca();};})();pag.appendChild(b);}
+    const next=document.createElement('button');next.className='page-btn';next.innerHTML='›';next.onclick=()=>{if(_paginaBib<pages){_paginaBib++;renderBiblioteca();}};pag.appendChild(next);
+  }
   const tbody=document.getElementById('bib-body');
   if(!lista.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🧱</div>Nenhum set encontrado</div></td></tr>`;return;}
   tbody.innerHTML=lista.map(s=>{
