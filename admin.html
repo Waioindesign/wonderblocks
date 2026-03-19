@@ -837,8 +837,10 @@ function usarUltimoCupom(){
 
 // ── RENDER ──
 function atualizarBadges(){
-  const counts={todos:todasOfertas.length,muitobom:0,bom:0,media:0,ruim:0};
-  todasOfertas.forEach(o=>{const f=seloInfo(o.selo).f;if(counts[f]!==undefined)counts[f]++;});
+  // Contar apenas da loja atual
+  const filtradas=filtroLoja==='todas'?todasOfertas:todasOfertas.filter(o=>o.loja===filtroLoja);
+  const counts={todos:filtradas.length,muitobom:0,bom:0,media:0,ruim:0};
+  filtradas.forEach(o=>{const f=seloInfo(o.selo).f;if(counts[f]!==undefined)counts[f]++;});
   const pills=document.querySelectorAll('.stat-pill');
   pills.forEach(p=>{const f=p.dataset.f;const label=f==='todos'?'Todos':f==='muitobom'?'Muito bom':f==='bom'?'Bom':f==='media'?'Na média':'Ruim';p.textContent=`${label} (${counts[f]||0})`;});
   document.getElementById('badge-todas').textContent=todasOfertas.length;
@@ -872,6 +874,7 @@ function filtrarLoja(loja){
   document.querySelector('.stat-pill[data-f="todos"]')?.classList.add('active');
   const temaLabel=document.getElementById('filtro-tema-label');
   if(temaLabel) temaLabel.textContent='Tema';
+  atualizarBadges();
   renderTabela();
   showPage('dashboard');
 }
@@ -897,7 +900,9 @@ function renderTabela(){
   const q=(document.getElementById('table-search').value||'').toLowerCase();
   const perPage=parseInt(document.getElementById('per-page').value)||20;
   let lista=[...todasOfertas];
+  console.log('renderTabela — total:',todasOfertas.length,'filtroLoja:',filtroLoja,'filtroTema:',filtroTema,'filtroSelo:',filtroSelo);
   if(filtroLoja!=='todas') lista=lista.filter(o=>o.loja===filtroLoja);
+  console.log('após filtroLoja:',lista.length);
   if(filtroSelo!=='todos') lista=lista.filter(o=>seloInfo(o.selo).f===filtroSelo);
   if(filtroTema){
     lista=lista.filter(o=>{
