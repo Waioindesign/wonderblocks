@@ -1063,8 +1063,14 @@ function popularFiltroTemas(){
   const temas=[...new Set(todasOfertas.map(o=>o.tema||'').filter(Boolean))].sort();
   const container=document.getElementById('filtro-tema-options');
   if(!container)return;
-  container.innerHTML='<div class="dd-opt'+(filtroTema===''?' active':'')+'" onclick="aplicarTema('','Tema')">— Todos os temas</div>'
-    +temas.map(t=>`<div class="dd-opt${filtroTema===t?' active':''}" onclick="aplicarTema('${t}','${t}')">${t}</div>`).join('');
+  const activeAll=filtroTema===''?' active':'';
+  let html=`<div class="dd-opt${activeAll}" onclick="aplicarTema('','Tema')">— Todos os temas</div>`;
+  temas.forEach(t=>{
+    const activeT=filtroTema===t?' active':'';
+    const tEsc=t.replace(/'/g,"\\'");
+    html+=`<div class="dd-opt${activeT}" onclick="aplicarTema('${tEsc}','${tEsc}')">${t}</div>`;
+  });
+  container.innerHTML=html;
 }
 
 function aplicarTema(tema,label){
