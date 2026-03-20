@@ -1146,8 +1146,13 @@ function abrirPainel(titulo='Nova Oferta', prefill=true){
   document.getElementById('panel-title').textContent=titulo;
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('slide-panel').classList.add('open');
-  // Pre-fill last cupom when opening for new offer (not set edit)
-  if(prefill && !window._editandoSetId && !editandoId){
+  if(prefill){
+    // Sempre garantir que _editandoSetId está limpo para nova oferta
+    window._editandoSetId=null;
+    // Pre-select loja da sidebar atual
+    const lojaAtiva=filtroLoja!=='todas'?filtroLoja:'Amazon';
+    selecionarLoja(lojaAtiva);
+    // Pre-fill último cupom
     if(ultimoCupom){
       document.getElementById('p-cupom').value=ultimoCupom;
       document.getElementById('p-cupom-obs').value=ultimoCupomObs||'';
@@ -1305,6 +1310,7 @@ async function salvarOferta(){
     }
 
     // If editing set only (from biblioteca)
+    console.log('salvarOferta — _editandoSetId:',window._editandoSetId,'editandoId:',editandoId);
     if(window._editandoSetId){
       const mph2=parsePreco(document.getElementById('p-mph').value);
       const setPayload={nome,tema:tema||null,pecas:pc,mph:mph2&&!isNaN(mph2)?Math.round(mph2*100)/100:null};
