@@ -591,7 +591,16 @@ select.field-input option{background:var(--bg3);}
         <label class="field-label">MPH (Melhor Preço Histórico)</label>
         <input type="text" class="field-input" id="p-mph" placeholder="R$ 0,00">
       </div>
-
+      <div>
+        <label class="field-label">Duração da oferta</label>
+        <select class="field-input" id="p-dur">
+          <option value="0">Sem expiração</option>
+          <option value="24" selected>24 horas</option>
+          <option value="48">48 horas</option>
+          <option value="72">72 horas</option>
+          <option value="168">7 dias</option>
+        </select>
+      </div>
     </div>
 
     <div class="section-divider">Loja e Cupom</div>
@@ -1274,7 +1283,7 @@ async function salvarOferta(){
   const cupom2Obs=getCupomObs(2);
   const loja=document.getElementById('p-loja').value;
   const tag=document.getElementById('p-tag').value;
-  const dur=0; // Sem expiração — ofertas ficam ativas permanentemente
+  const dur=parseInt(document.getElementById('p-dur')?.value||'0');
   const fraseSelVal=document.getElementById('p-frase-sel').value;
   const fraseManual=document.getElementById('p-frase-manual').value.trim();
   const fraseFixa=fraseSelVal==='manual'?fraseManual:(fraseSelVal||'');
@@ -1291,7 +1300,7 @@ async function salvarOferta(){
 
   const ppp=pf/pc,desc=Math.round(((po-pf)/po)*100),selo=classificar(ppp);
   const imgUrl=`https://images.brickset.com/sets/images/${num}-1.jpg`;
-  const expires_at=null; // Sem expiração
+  const expires_at=dur>0?new Date(Date.now()+dur*3600000).toISOString():null;
 
   const btn=document.getElementById('p-btn-save');
   btn.disabled=true; btn.textContent='Salvando...';
@@ -1347,7 +1356,8 @@ async function salvarOferta(){
     }
 
     // Salvar oferta
-    const payload={nome_set:nome||'Oferta LEGO',numero_set:num||null,imagem_url:imgUrl,tema:tema||null,preco_original:po,preco_final:pf,desconto_pct:desc,ppp:Math.round(ppp*100)/100,pecas:pc,selo,link:link||null,cupom:cupom||null,cupom_obs:cupomObs||null,cupom2:cupom2||null,cupom2_obs:cupom2Obs||null,frase_fixa:fraseFixa||null,tag_historica:tag||null,selo_card:seloCardSelecionado||null,loja,ativo:true,pausado:false,expires_at};
+    console.log('Salvando oferta payload loja:',loja,'num:',num);
+    const payload={nome_set:nome||'Oferta LEGO',numero_set:num||null,imagem_url:imgUrl,tema:tema||null,preco_original:po,preco_final:pf,desconto_pct:desc,ppp:Math.round(ppp*100)/100,pecas:pc,selo,link:link||null,cupom:cupom||null,cupom_obs:cupomObs||null,cupom2:cupom2||null,cupom2_obs:cupom2Obs||null,frase_fixa:fraseFixa||null,tag_historica:tag||null,selo_card:seloCardSelecionado||null,loja,expires_at};
 
     if(editandoId){
       await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${editandoId}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
