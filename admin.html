@@ -256,6 +256,18 @@ select.field-input option{background:var(--bg3);}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* RADAR MODAL */
+.radar-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.radar-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:480px;}
+.radar-modal h3{font-size:16px;font-weight:700;margin-bottom:1rem;}
+.radar-modal .field{margin-bottom:12px;}
+.radar-modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem;}
+.btn-confirm{padding:9px 20px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-confirm:hover{background:var(--blue2);}
+.radar-status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.radar-ativa{background:var(--green-dim);color:var(--green2);}
+.radar-pausada{background:var(--amber-dim);color:var(--amber2);}
+
 /* HIDDEN CANVAS */
 #canvas-gen{display:none;}
 
@@ -340,9 +352,13 @@ select.field-input option{background:var(--bg3);}
 
     <div class="sidebar-section">
       <div class="sidebar-section-label">Radar Wonderblocks</div>
-      <button class="sidebar-item" onclick="showPage('biblioteca')">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h12v12H2z" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <button class="sidebar-item" onclick="showPage('biblioteca')" id="nav-radar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         Radar Wonderblocks
+      </button>
+      <button class="sidebar-item" onclick="showPage('sets')" id="nav-sets">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Sets LEGO
       </button>
     </div>
 
@@ -480,21 +496,79 @@ select.field-input option{background:var(--bg3);}
       </div>
     </div>
 
-    <!-- PAGE: BIBLIOTECA -->
+    <!-- PAGE: RADAR -->
     <div id="page-biblioteca" style="display:none;">
       <div class="breadcrumb">
         <span>Dashboard</span>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span class="current">Biblioteca de Sets</span>
+        <span class="current">Radar Wonderblocks</span>
       </div>
       <h1 class="page-title">Radar Wonderblocks</h1>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">Gerencie as publicações ativas. Pause, edite duração/cupom/preço ou remova do radar sem excluir o produto.</p>
+
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="table-search">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <input type="text" id="radar-search" placeholder="Buscar por nome, ID ou loja..." oninput="renderRadar()">
+          </div>
+          <select class="btn-filtro" id="radar-status" onchange="renderRadar()" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:13px;padding:7px 14px;">
+            <option value="todas">Todas</option>
+            <option value="ativas">✅ Ativas</option>
+            <option value="pausadas">⏸ Pausadas</option>
+          </select>
+        </div>
+
+        <!-- Bulk bar radar -->
+        <div id="radar-bulk-bar" style="display:none;padding:8px 12px;background:var(--blue-dim);border-top:1px solid var(--blue-border);align-items:center;gap:8px;flex-wrap:wrap;">
+          <span id="radar-bulk-count" style="font-size:12px;color:var(--blue3);font-weight:600;"></span>
+          <button class="btn-sm" onclick="radarBulkPausar(true)" style="border-color:var(--amber-dim);color:var(--amber2);">⏸ Pausar</button>
+          <button class="btn-sm" onclick="radarBulkPausar(false)" style="border-color:var(--green-dim);color:var(--green2);">▶ Reativar</button>
+          <button class="btn-sm btn-del" onclick="radarBulkRemover()">✕ Remover do Radar</button>
+          <button class="btn-sm" onclick="radarDeselecionarTudo()" style="margin-left:auto;">✕ Cancelar</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:32px"><input type="checkbox" id="radar-check-all" onchange="radarToggleAll(this)"></th>
+                <th>Set</th>
+                <th>Loja</th>
+                <th>Cupom</th>
+                <th>Preço</th>
+                <th>Duração</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="radar-body">
+              <tr><td colspan="8" class="loading-state">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="radar-footer-info" style="color:var(--text3);font-size:13px;">0 publicações</span>
+          <div class="pagination" id="radar-pagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: SETS (biblioteca de produtos por loja) -->
+    <div id="page-sets" style="display:none;">
+      <div class="breadcrumb">
+        <span>Dashboard</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span class="current" id="sets-breadcrumb">Sets LEGO</span>
+      </div>
+      <h1 class="page-title" id="sets-titulo">Sets LEGO</h1>
       <div class="table-card" style="margin-top:1rem;">
         <div class="table-toolbar">
           <div class="table-search">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <input type="text" id="bib-search" placeholder="Buscar por nome ou número..." oninput="renderBiblioteca()" onkeydown="if(event.key==='Enter')renderBiblioteca()">
           </div>
-          <select class="btn-filtro" id="bib-tema" onchange="renderBiblioteca()" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;">
+          <select class="btn-filtro" id="bib-tema" onchange="renderBiblioteca()" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:13px;padding:7px 14px;">
             <option value="">Todos os temas</option>
           </select>
         </div>
@@ -518,8 +592,7 @@ select.field-input option{background:var(--bg3);}
         <div class="table-footer">
           <span id="bib-footer-info" style="color:var(--text3);font-size:13px;">0 sets</span>
           <div style="display:flex;align-items:center;gap:1rem;">
-            <div class="per-page">
-              Itens por pág.
+            <div class="per-page">Itens por pág.
               <select id="bib-per-page" onchange="_paginaBib=1;renderBiblioteca()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-family:'Inter',sans-serif;font-size:12px;color:var(--text);outline:none;">
                 <option value="15">15</option>
                 <option value="20" selected>20</option>
@@ -533,6 +606,46 @@ select.field-input option{background:var(--bg3);}
     </div>
 
   </main>
+</div>
+
+<!-- RADAR MODAL -->
+<div id="radar-modal-overlay" style="display:none;" class="radar-modal-overlay" onclick="if(event.target===this)fecharRadarModal()">
+  <div class="radar-modal">
+    <h3 id="radar-modal-titulo">Editar publicação</h3>
+    <input type="hidden" id="radar-modal-id">
+    <div class="field">
+      <label class="field-label">Cupom</label>
+      <input type="text" class="field-input" id="radar-modal-cupom" placeholder="Cupom (opcional)" style="text-transform:uppercase;">
+    </div>
+    <div class="field">
+      <label class="field-label">Frase do cupom</label>
+      <input type="text" class="field-input" id="radar-modal-cupom-obs" placeholder="Ex: (12% OFF)">
+    </div>
+    <div class="panel-grid">
+      <div class="field">
+        <label class="field-label">Preço de</label>
+        <input type="text" class="field-input" id="radar-modal-po" placeholder="R$ 0,00">
+      </div>
+      <div class="field">
+        <label class="field-label">Preço por</label>
+        <input type="text" class="field-input" id="radar-modal-pf" placeholder="R$ 0,00">
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Duração</label>
+      <select class="field-input" id="radar-modal-dur">
+        <option value="0">Sem expiração</option>
+        <option value="24">24 horas</option>
+        <option value="48">48 horas</option>
+        <option value="72">72 horas</option>
+        <option value="168">7 dias</option>
+      </select>
+    </div>
+    <div class="radar-modal-footer">
+      <button class="btn-cancel-panel" onclick="fecharRadarModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="salvarRadarModal()">Salvar</button>
+    </div>
+  </div>
 </div>
 
 <!-- SLIDE PANEL -->
@@ -781,6 +894,10 @@ function initLojaDDMenu(){
 function showPage(p){
   document.getElementById('page-dashboard').style.display=p==='dashboard'?'block':'none';
   document.getElementById('page-biblioteca').style.display=p==='biblioteca'?'block':'none';
+  const setsEl=document.getElementById('page-sets');
+  if(setsEl) setsEl.style.display=p==='sets'?'block':'none';
+  if(p==='biblioteca') renderRadar();
+  if(p==='sets') renderBiblioteca();
 }
 
 // ── UTILS ──
@@ -999,8 +1116,11 @@ function renderTabela(){
       <td>${o.pausado?'<span class="badge-selo" style="background:rgba(139,148,158,.15);color:var(--text3)"><span class="badge-dot" style="background:var(--text3)"></span>PAUSADA</span>':`<span class="badge-selo ${info.cls}"><span class="badge-dot"></span>${info.label}</span>`}</td>
       <td>
         <div class="action-btns">
-          <button class="btn-icon publish" title="Ver card / publicar" onclick="toggleExpand('${o.id}')">
+          <button class="btn-icon publish" title="Ver card / copiar" onclick="toggleExpand('${o.id}')" style="position:relative;">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+          </button>
+          <button class="btn-icon" title="Publicar no Radar" onclick="publicarNoRadar('${o.id}')" style="background:rgba(34,197,94,.1);color:#22c55e;border-color:rgba(34,197,94,.3);">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1L8 11M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           </button>
           <button class="btn-icon ${o.pausado?'':'edit'}" title="${o.pausado?'Reativar oferta':'Pausar oferta'}" onclick="togglePausar('${o.id}',${o.pausado?'true':'false'})" style="${o.pausado?'background:var(--amber-dim);color:var(--amber2);border-color:rgba(251,191,36,.3)':''}">
             ${o.pausado
@@ -1491,6 +1611,213 @@ function novaOfertaDoSet(num,nome,pecas,img,tema=''){
   if(img){const bar=document.getElementById('set-found-bar');document.getElementById('set-found-img').src=img;document.getElementById('set-found-nome').textContent=nome;document.getElementById('set-found-pecas').textContent=pecas?`${pecas} peças`:'';bar.style.display='flex';}
   abrirPainel('Nova Oferta');
   showPage('dashboard');
+}
+
+// ── RADAR WONDERBLOCKS ──
+let _radarOfertas=[], _radarPage=1;
+const RADAR_PER_PAGE=20;
+
+async function renderRadar(){
+  const q=(document.getElementById('radar-search')?.value||'').toLowerCase();
+  const status=document.getElementById('radar-status')?.value||'todas';
+  let lista=[...todasOfertas];
+  if(status==='ativas') lista=lista.filter(o=>!o.pausado);
+  if(status==='pausadas') lista=lista.filter(o=>o.pausado);
+  if(q) lista=lista.filter(o=>(o.nome_set||'').toLowerCase().includes(q)||(o.numero_set||'').includes(q)||(o.loja||'').toLowerCase().includes(q));
+
+  const total=lista.length;
+  const pages=Math.ceil(total/RADAR_PER_PAGE)||1;
+  if(_radarPage>pages)_radarPage=1;
+  const start=(_radarPage-1)*RADAR_PER_PAGE;
+  const page=lista.slice(start,start+RADAR_PER_PAGE);
+
+  document.getElementById('radar-footer-info').textContent=`${start+1}–${Math.min(start+RADAR_PER_PAGE,total)} de ${total} publicações`;
+
+  const pag=document.getElementById('radar-pagination');
+  pag.innerHTML='';
+  if(pages>1){
+    const prev=document.createElement('button');prev.className='page-btn';prev.textContent='‹';prev.disabled=_radarPage===1;prev.onclick=()=>{_radarPage--;renderRadar();};pag.appendChild(prev);
+    for(let i=1;i<=Math.min(pages,5);i++){const b=document.createElement('button');b.className='page-btn'+(i===_radarPage?' active':'');b.textContent=i;b.onclick=(()=>{const p=i;return()=>{_radarPage=p;renderRadar();};})();pag.appendChild(b);}
+    const next=document.createElement('button');next.className='page-btn';next.textContent='›';next.disabled=_radarPage===pages;next.onclick=()=>{_radarPage++;renderRadar();};pag.appendChild(next);
+  }
+
+  const tbody=document.getElementById('radar-body');
+  if(!page.length){tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📡</div>Nenhuma publicação encontrada</div></td></tr>`;return;}
+  
+  tbody.innerHTML=page.map(o=>{
+    const lojaObj=lojaByVal(o.loja||'Amazon');
+    const info=seloInfo(o.selo);
+    const timer=o.expires_at?timerRadar(o.expires_at):'Sem expiração';
+    const isExp=o.expires_at&&new Date(o.expires_at)<=new Date();
+    const img=o.imagem_url||`https://images.brickset.com/sets/images/${o.numero_set}-1.jpg`;
+    const imgFb=`https://img.bricklink.com/ItemImage/SN/0/${o.numero_set}-1.png`;
+    return`<tr style="${o.pausado?'opacity:.45':''}${isExp?';background:rgba(248,113,113,.05)':''}">
+      <td><input type="checkbox" class="radar-check" data-id="${o.id}" onchange="atualizarRadarBulk()"></td>
+      <td>
+        <div class="set-cell">
+          <img class="set-thumb" src="${img}" alt="" onerror="this.src='${imgFb}'" loading="lazy">
+          <div>
+            <div class="set-id">${o.numero_set||'—'}</div>
+            <div class="set-name">${o.nome_set||'Oferta LEGO'}</div>
+          </div>
+        </div>
+      </td>
+      <td><div style="display:flex;align-items:center;gap:6px;"><div class="loja-icon-sm"><img src="${lojaObj.logo}" alt=""></div><span style="font-size:12px;">${o.loja||'—'}</span></div></td>
+      <td style="font-size:12px;font-weight:600;">${o.cupom||'—'}${o.cupom_obs?'<br><span style="font-weight:400;color:var(--text3);font-size:11px;">'+o.cupom_obs+'</span>':''}</td>
+      <td class="price-cell">
+        <div class="original">R$${fmt(o.preco_original)}</div>
+        <div class="final">R$${fmt(o.preco_final)}</div>
+      </td>
+      <td style="font-size:12px;color:${isExp?'var(--red2)':'var(--text2)'};">${isExp?'⚠️ Expirada':timer}</td>
+      <td>
+        ${o.pausado
+          ?'<span class="radar-status-badge radar-pausada">⏸ Pausada</span>'
+          :isExp
+            ?'<span class="radar-status-badge" style="background:var(--red-dim);color:var(--red2);">⚠️ Expirada</span>'
+            :'<span class="radar-status-badge radar-ativa">● Ativa</span>'}
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon ${o.pausado?'':'edit'}" title="${o.pausado?'Reativar':'Pausar'}" onclick="togglePausar('${o.id}',${o.pausado?'true':'false'})" style="${o.pausado?'background:var(--amber-dim);color:var(--amber2);border-color:rgba(251,191,36,.3)':''}">
+            ${o.pausado
+              ?'<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 3l9 5-9 5V3z" fill="currentColor"/></svg>'
+              :'<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3v10M10 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'}
+          </button>
+          <button class="btn-icon edit" title="Editar publicação" onclick='abrirRadarModal(${JSON.stringify(o).replace(/'/g,"&#39;")})'>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3"/></svg>
+          </button>
+          <button class="btn-icon del" title="Remover do Radar" onclick="removerDoRadar('${o.id}')">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M5 4V2h6v2M6 7v5M10 7v5M4 4l1 9h6l1-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function timerRadar(exp){
+  if(!exp)return'Sem expiração';
+  const d=new Date(exp)-new Date();
+  if(d<=0)return'Expirada';
+  const h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000);
+  if(d>86400000)return`${Math.floor(d/86400000)}d ${h%24}h`;
+  return h>0?`${h}h ${m}m`:`${m}m`;
+}
+
+async function removerDoRadar(id){
+  if(!confirm('Remover esta publicação do Radar? O produto permanece salvo na loja.'))return;
+  try{
+    await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});
+    showToast('Removido do Radar','#da3633');
+    await carregarOfertas();
+    renderRadar();
+  }catch(e){showToast('Erro','#da3633');}
+}
+
+function abrirRadarModal(o){
+  document.getElementById('radar-modal-id').value=o.id;
+  document.getElementById('radar-modal-titulo').textContent=`Editar: ${o.nome_set||'Oferta'}`;
+  document.getElementById('radar-modal-cupom').value=o.cupom||'';
+  document.getElementById('radar-modal-cupom-obs').value=o.cupom_obs||'';
+  document.getElementById('radar-modal-po').value=o.preco_original||'';
+  document.getElementById('radar-modal-pf').value=o.preco_final||'';
+  if(o.expires_at){
+    const hrs=Math.round((new Date(o.expires_at)-new Date())/3600000);
+    document.getElementById('radar-modal-dur').value=hrs<=24?'24':hrs<=48?'48':hrs<=72?'72':'168';
+  }else document.getElementById('radar-modal-dur').value='0';
+  document.getElementById('radar-modal-overlay').style.display='flex';
+}
+
+function fecharRadarModal(){
+  document.getElementById('radar-modal-overlay').style.display='none';
+}
+
+async function salvarRadarModal(){
+  const id=document.getElementById('radar-modal-id').value;
+  const cupom=document.getElementById('radar-modal-cupom').value.trim().toUpperCase();
+  const cupomObs=document.getElementById('radar-modal-cupom-obs').value.trim();
+  const po=parsePreco(document.getElementById('radar-modal-po').value);
+  const pf=parsePreco(document.getElementById('radar-modal-pf').value);
+  const dur=parseInt(document.getElementById('radar-modal-dur').value);
+  const expires_at=dur>0?new Date(Date.now()+dur*3600000).toISOString():null;
+
+  const patch={cupom:cupom||null,cupom_obs:cupomObs||null,expires_at};
+  if(!isNaN(po)&&po>0) patch.preco_original=po;
+  if(!isNaN(pf)&&pf>0){
+    patch.preco_final=pf;
+    // Recalcular PPP e desconto
+    const oferta=todasOfertas.find(o=>o.id===id);
+    if(oferta&&oferta.pecas){
+      patch.ppp=Math.round((pf/oferta.pecas)*100)/100;
+      patch.desconto_pct=Math.round(((patch.preco_original||oferta.preco_original)-pf)/(patch.preco_original||oferta.preco_original)*100);
+      patch.selo=classificar(patch.ppp);
+    }
+  }
+
+  try{
+    await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${id}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json'},body:JSON.stringify(patch)});
+    showToast('✓ Publicação atualizada!','#238636');
+    fecharRadarModal();
+    await carregarOfertas();
+    renderRadar();
+  }catch(e){showToast('Erro ao salvar','#da3633');}
+}
+
+function atualizarRadarBulk(){
+  const checked=document.querySelectorAll('.radar-check:checked');
+  const bar=document.getElementById('radar-bulk-bar');
+  const count=document.getElementById('radar-bulk-count');
+  if(bar) bar.style.display=checked.length?'flex':'none';
+  if(count) count.textContent=`${checked.length} selecionada(s)`;
+}
+
+function radarToggleAll(cb){
+  document.querySelectorAll('.radar-check').forEach(c=>c.checked=cb.checked);
+  atualizarRadarBulk();
+}
+
+function radarDeselecionarTudo(){
+  document.querySelectorAll('.radar-check').forEach(c=>c.checked=false);
+  const cb=document.getElementById('radar-check-all');if(cb)cb.checked=false;
+  atualizarRadarBulk();
+}
+
+async function radarBulkPausar(pausar){
+  const ids=[...document.querySelectorAll('.radar-check:checked')].map(c=>c.dataset.id);
+  if(!ids.length)return;
+  for(const id of ids) await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${id}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json'},body:JSON.stringify({pausado:pausar})});
+  showToast(`${ids.length} oferta(s) ${pausar?'pausadas':'reativadas'}`,'#238636');
+  radarDeselecionarTudo();
+  await carregarOfertas();
+  renderRadar();
+}
+
+async function radarBulkRemover(){
+  const ids=[...document.querySelectorAll('.radar-check:checked')].map(c=>c.dataset.id);
+  if(!ids.length)return;
+  if(!confirm(`Remover ${ids.length} publicação(ões) do Radar?`))return;
+  for(const id of ids) await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});
+  showToast(`${ids.length} removida(s) do Radar`,'#da3633');
+  radarDeselecionarTudo();
+  await carregarOfertas();
+  renderRadar();
+}
+
+// Publicar no Radar a partir de uma oferta da loja
+async function publicarNoRadar(id){
+  const o=todasOfertas.find(x=>x.id===id);
+  if(!o)return;
+  // Verificar se já existe no radar (mesmo set + loja) para avisar
+  const existing=todasOfertas.filter(x=>x.numero_set===o.numero_set&&x.loja===o.loja&&x.id!==id);
+  if(existing.length>0){
+    if(!confirm(`Já existe uma publicação do set #${o.numero_set} na loja ${o.loja}. Substituir?`))return;
+    for(const e of existing) await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${e.id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});
+  }
+  // Reativar pausado ou já está ativo
+  await fetch(`${SUPA}/rest/v1/ofertas?id=eq.${id}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json'},body:JSON.stringify({pausado:false})});
+  showToast('✓ Publicado no Radar!','#22c55e');
+  await carregarOfertas();
+  showPage('biblioteca');
 }
 
 async function togglePausar(id, isPausado){
