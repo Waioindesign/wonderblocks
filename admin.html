@@ -885,13 +885,14 @@ function initLojaDDMenu(){
 function showPage(p){
   document.getElementById('page-dashboard').style.display=p==='dashboard'?'block':'none';
   document.getElementById('page-biblioteca').style.display=p==='biblioteca'?'block':'none';
-  // Update sidebar active
   document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
   if(p==='dashboard') document.getElementById('nav-todas')?.classList.add('active');
-  if(p==='biblioteca') document.getElementById('nav-radar')?.classList.add('active');
   if(p==='biblioteca'){
-    if(todasOfertas.length>0) renderRadar();
-    else carregarOfertas().then(()=>renderRadar());
+    document.getElementById('nav-radar')?.classList.add('active');
+    setTimeout(()=>{
+      if(todasOfertas.length>0) renderRadar();
+      else carregarOfertas();
+    },50);
   }
 }
 
@@ -937,8 +938,9 @@ async function carregarOfertas(){
     renderTabela();
     renderSidebarCounts();
     popularFiltroTemas();
+    // Always update radar if visible
     const radarPage=document.getElementById('page-biblioteca');
-    if(radarPage&&radarPage.style.display!=='none') renderRadar();
+    if(radarPage&&radarPage.style.display==='block') renderRadar();
   }catch(e){console.error('carregarOfertas error:',e);}
 }
 
