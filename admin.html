@@ -425,7 +425,7 @@ select.field-input option{background:var(--bg3);}
             <option value="ppp_desc">Maior PPP</option>
             <option value="mph_asc">Menor MPH</option>
           </select>
-          <select class="btn-filtro" id="dash-tema" onchange="filtroTema=this.value;paginaAtual=1;renderTabela();" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:13px;padding:7px 14px;" id="dash-tema-sel">
+          <select class="btn-filtro" id="dash-tema" onchange="filtroTema=this.value;paginaAtual=1;renderTabela();" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:13px;padding:7px 14px;" >
             <option value="">Todos os temas</option>
           </select>
           <button class="btn-add" onclick="abrirPainel()">
@@ -889,7 +889,10 @@ function showPage(p){
   document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
   if(p==='dashboard') document.getElementById('nav-todas')?.classList.add('active');
   if(p==='biblioteca') document.getElementById('nav-radar')?.classList.add('active');
-  if(p==='biblioteca') renderRadar();
+  if(p==='biblioteca'){
+    if(todasOfertas.length>0) renderRadar();
+    else carregarOfertas().then(()=>renderRadar());
+  }
 }
 
 // ── UTILS ──
@@ -934,6 +937,8 @@ async function carregarOfertas(){
     renderTabela();
     renderSidebarCounts();
     popularFiltroTemas();
+    const radarPage=document.getElementById('page-biblioteca');
+    if(radarPage&&radarPage.style.display!=='none') renderRadar();
   }catch(e){console.error('carregarOfertas error:',e);}
 }
 
@@ -1268,24 +1273,30 @@ document.addEventListener('click',e=>{
 
 function popularFiltroTemas(){
   const temasOfertas=todasOfertas.map(o=>o.tema||'').filter(Boolean);
-  const temasLib=typeof _todosSetsBib!=='undefined'?_todosSetsBib.map(s=>s.tema||'').filter(Boolean):[];
+  const temasLib=typeof _todosSetsBib!=='undefined'&&_todosSetsBib.length?_todosSetsBib.map(s=>s.tema||'').filter(Boolean):[];
   const temas=[...new Set([...temasOfertas,...temasLib])].sort();
-  const container=document.getElementById('filtro-tema-options');
-  if(!container)return;
-  const activeAll=filtroTema===''?' active':'';
-  let html=`<div class="dd-opt${activeAll}" onclick="aplicarTema('','Tema')">— Todos os temas</div>`;
-  temas.forEach(t=>{
-    const activeT=filtroTema===t?' active':'';
-    const tEsc=t.replace(/'/g,"\'");
-    html+=`<div class="dd-opt${activeT}" onclick="aplicarTema('${tEsc}','${tEsc}')">${t}</div>`;
-  });
-  container.innerHTML=html;
+  // Populate dash-tema dropdown
+  const sel=document.getElementById('dash-tema');
+  if(sel){
+    const cur=sel.value;
+    while(sel.options.length>1)sel.remove(1);
+    temas.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===cur)o.selected=true;sel.appendChild(o);});
+  }
+}
+
+function aplicarOrdemSelect(){
+  const v=document.getElementById('dash-sort')?.value||'';
+  ordemAtual=v;
+  sortCol='';
+  paginaAtual=1;
+  renderTabela();
 }
 
 function aplicarTema(tema,label){
   filtroTema=tema;
   document.getElementById('filtro-tema-label').textContent=label||'Tema';
-  document.getElementById('dd-filtro-tema').style.display='none';
+  const dd=document.getElementById('dd-filtro-tema');
+  if(dd) dd.style.display='none';
   paginaAtual=1; renderTabela();
   popularFiltroTemas();
 }
