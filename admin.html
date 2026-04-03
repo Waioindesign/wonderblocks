@@ -375,11 +375,13 @@ select.field-input option{background:var(--bg3);}
     <div class="login-logo"><img src="logo_wonderblocks.svg" alt="Wonderblocks"></div>
     <p class="login-title">Painel Admin</p>
     <p class="login-sub">Wonderblocks Radar de Ofertas</p>
-    <div class="login-field">
-      <label class="login-label">Senha</label>
-      <input class="login-input" type="password" id="login-senha" placeholder="••••••••" enterkeyhint="go" onkeyup="if(event.key==='Enter'||event.keyCode===13)doLogin()" autocomplete="current-password">
-    </div>
-    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <form onsubmit="doLogin();return false;">
+      <div class="login-field">
+        <label class="login-label">Senha</label>
+        <input class="login-input" type="password" id="login-senha" placeholder="••••••••" enterkeyhint="go" autocomplete="current-password">
+      </div>
+      <button type="submit" class="login-btn">Entrar</button>
+    </form>
     <p class="login-err" id="login-err">Senha incorreta.</p>
   </div>
 </div>
