@@ -22,7 +22,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 /* ── LOGIN ── */
 .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;}
-.login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2.5rem;width:360px;}
+.login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2.5rem;width:min(360px,calc(100vw - 2rem));}
 .login-logo{display:flex;justify-content:center;margin-bottom:2rem;}
 .login-logo img{height:40px;}
 .login-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:6px;}
@@ -377,7 +377,7 @@ select.field-input option{background:var(--bg3);}
     <p class="login-sub">Wonderblocks Radar de Ofertas</p>
     <div class="login-field">
       <label class="login-label">Senha</label>
-      <input class="login-input" type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="login-input" type="password" id="login-senha" placeholder="••••••••" enterkeyhint="go" onkeyup="if(event.key==='Enter'||event.keyCode===13)doLogin()" autocomplete="current-password">
     </div>
     <button class="login-btn" onclick="doLogin()">Entrar</button>
     <p class="login-err" id="login-err">Senha incorreta.</p>
