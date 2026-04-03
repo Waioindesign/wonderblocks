@@ -275,6 +275,13 @@ select.field-input option{background:var(--bg3);}
 /* HIDDEN CANVAS */
 #canvas-gen{display:none;}
 
+/* Cards mobile e radar cards — ocultos por padrão (desktop) */
+.cards-mobile,.radar-cards-mobile{display:none;}
+.sidebar-overlay{display:none;}
+/* Hambúrguer — escondido no desktop */
+.btn-hamburger{display:none;width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;}
+.btn-hamburger:hover{color:var(--text);}
+
 /* MOBILE */
 @media(max-width:768px){
   :root{--sidebar:0px;}
@@ -355,14 +362,6 @@ select.field-input option{background:var(--bg3);}
   .radar-card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
   .radar-card-actions .btn-sm{flex:1;}
 }
-
-/* Hambúrguer — escondido no desktop */
-.btn-hamburger{display:none;width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;}
-.btn-hamburger:hover{color:var(--text);}
-
-/* Cards mobile — escondidos no desktop */
-.cards-mobile,.radar-cards-mobile{display:none;}
-.sidebar-overlay{display:none;}
 </style>
 </head>
 <body>
