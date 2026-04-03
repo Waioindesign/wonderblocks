@@ -245,6 +245,10 @@ select.field-input option{background:var(--bg3);}
 .msg-ok-panel{font-size:12px;color:var(--green2);display:none;align-items:center;gap:4px;}
 .msg-err-panel{font-size:12px;color:var(--red2);display:none;align-items:center;gap:4px;}
 
+/* BTN SM */
+.btn-sm{padding:6px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+.btn-sm:hover{background:var(--bg3);color:var(--text);}
+
 /* EMPTY / LOADING */
 .empty-state,.loading-state{text-align:center;padding:4rem 1rem;color:var(--text3);}
 .dd-opt{padding:8px 14px;font-size:13px;color:var(--text2);cursor:pointer;transition:background .1s;}
@@ -274,16 +278,91 @@ select.field-input option{background:var(--bg3);}
 /* MOBILE */
 @media(max-width:768px){
   :root{--sidebar:0px;}
-  .app-sidebar{transform:translateX(-240px);width:240px;transition:transform .25s;}
+
+  /* Sidebar como drawer */
+  .app-sidebar{transform:translateX(-240px);width:240px;transition:transform .25s;z-index:150;}
   .app-sidebar.mobile-open{transform:translateX(0);}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:149;}
+  .sidebar-overlay.open{display:block;}
+
+  /* Header mobile */
   .app-main{margin-left:0;}
-  .header-logo{width:auto;}
-  .expand-inner{grid-template-columns:1fr;}
+  .header-logo{width:auto;padding:0 .5rem;}
+  .header-search{max-width:none;flex:1;}
+  .btn-ver-site{display:none;}
+  .btn-hamburger{display:flex;}
+
+  /* Stats bar scroll horizontal */
+  .stats-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none;}
+  .stats-bar::-webkit-scrollbar{display:none;}
+  .stat-pill{font-size:12px;padding:5px 10px;white-space:nowrap;flex-shrink:0;}
+
+  /* Esconder tabela, mostrar cards mobile */
+  .table-desktop{display:none;}
+  .cards-mobile{display:flex;flex-direction:column;gap:8px;padding:12px;}
+
+  /* Card mobile de oferta */
+  .oferta-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+  .oferta-card-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;}
+  .oferta-card-thumb{width:44px;height:44px;border-radius:6px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0;}
+  .oferta-card-info{flex:1;min-width:0;}
+  .oferta-card-id{font-size:11px;color:var(--blue3);font-weight:600;}
+  .oferta-card-nome{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .oferta-card-preco{display:flex;align-items:center;gap:6px;margin-top:2px;}
+  .oferta-card-de{font-size:11px;color:var(--text3);text-decoration:line-through;}
+  .oferta-card-por{font-size:13px;font-weight:700;color:var(--text);}
+  .oferta-card-chevron{color:var(--text3);transition:transform .2s;flex-shrink:0;}
+  .oferta-card-chevron.open{transform:rotate(180deg);}
+  .oferta-card-badges{display:flex;align-items:center;gap:6px;padding:0 12px 10px;flex-wrap:wrap;}
+  .oferta-card-body{border-top:1px solid var(--border);padding:12px;display:none;}
+  .oferta-card-body.open{display:block;}
+  .oferta-card-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:1px solid var(--border);}
+  .oferta-card-row:last-child{border-bottom:none;}
+  .oferta-card-row-label{color:var(--text3);}
+  .oferta-card-row-val{color:var(--text);font-weight:600;}
+  .oferta-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;}
+  .oferta-card-actions .btn-card-action{padding:8px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .oferta-card-actions .btn-card-action:active{opacity:.7;}
+  .btn-card-publish{background:rgba(34,197,94,.1)!important;color:#22c55e!important;border-color:rgba(34,197,94,.3)!important;}
+  .btn-card-edit{background:var(--green-dim)!important;color:var(--green2)!important;border-color:rgba(63,185,80,.3)!important;}
+  .btn-card-pause{background:var(--amber-dim)!important;color:var(--amber2)!important;border-color:rgba(251,191,36,.3)!important;}
+  .btn-card-del{background:var(--red-dim)!important;color:var(--red2)!important;border-color:rgba(248,81,73,.3)!important;}
+
+  /* Expand card no mobile */
+  .oferta-card-expand{border-top:1px solid var(--border);padding:12px;display:none;background:var(--bg2);}
+  .oferta-card-expand.open{display:block;}
+  .expand-preview-mobile{width:100%;aspect-ratio:1/1;border-radius:var(--radius-lg);overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+  .expand-preview-mobile canvas,.expand-preview-mobile img{width:100%;height:100%;display:block;object-fit:contain;}
+  .btn-publish-action-mobile{width:100%;padding:12px;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;}
+
+  /* Slide panel fullscreen */
   .slide-panel{width:100%;right:-100%;}
   .panel-grid,.panel-grid-3{grid-template-columns:1fr;}
-  .stats-bar{gap:6px;}
-  .stat-pill{font-size:12px;padding:5px 10px;}
+
+  /* Table toolbar wrap */
+  .table-toolbar{flex-wrap:wrap;}
+  .table-toolbar .table-search{min-width:100%;order:-1;}
+  .btn-add{width:100%;justify-content:center;}
+
+  /* Radar table cards no mobile */
+  .radar-table-desktop{display:none;}
+  .radar-cards-mobile{display:flex;flex-direction:column;gap:8px;padding:12px;}
+  .radar-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px;}
+  .radar-card-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .radar-card-info{flex:1;min-width:0;}
+  .radar-card-nome{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .radar-card-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+  .radar-card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .radar-card-actions .btn-sm{flex:1;}
 }
+
+/* Hambúrguer — escondido no desktop */
+.btn-hamburger{display:none;width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;}
+.btn-hamburger:hover{color:var(--text);}
+
+/* Cards mobile — escondidos no desktop */
+.cards-mobile,.radar-cards-mobile{display:none;}
+.sidebar-overlay{display:none;}
 </style>
 </head>
 <body>
@@ -305,11 +384,17 @@ select.field-input option{background:var(--bg3);}
   </div>
 </div>
 
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="fecharSidebar()"></div>
+
 <!-- APP -->
 <div class="app" id="app">
 
   <!-- HEADER -->
   <header class="app-header">
+    <button class="btn-hamburger" id="btn-hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
     <div class="header-logo">
       <img src="logo_wonderblocks.svg" alt="Wonderblocks">
     </div>
@@ -433,7 +518,7 @@ select.field-input option{background:var(--bg3);}
             Adicionar
           </button>
         </div>
-        <div style="overflow-x:auto;">
+        <div class="table-desktop" style="overflow-x:auto;">
           <table id="tabela">
             <thead>
               <tr>
@@ -454,6 +539,8 @@ select.field-input option{background:var(--bg3);}
             </tbody>
           </table>
         </div>
+        <!-- CARDS MOBILE -->
+        <div class="cards-mobile" id="cards-mobile-body"></div>
         <div class="table-footer">
           <span id="footer-info" style="color:var(--text3);font-size:13px;">0 ofertas</span>
           <div style="display:flex;align-items:center;gap:1rem;">
@@ -518,7 +605,7 @@ select.field-input option{background:var(--bg3);}
           <button class="btn-sm" onclick="radarDeselecionarTudo()" style="margin-left:auto;">✕ Cancelar</button>
         </div>
 
-        <div style="overflow-x:auto;">
+        <div class="radar-table-desktop" style="overflow-x:auto;">
           <table>
             <thead>
               <tr>
@@ -537,6 +624,8 @@ select.field-input option{background:var(--bg3);}
             </tbody>
           </table>
         </div>
+        <!-- RADAR CARDS MOBILE -->
+        <div class="radar-cards-mobile" id="radar-cards-mobile-body"></div>
         <div class="table-footer">
           <span id="radar-footer-info" style="color:var(--text3);font-size:13px;">0 publicações</span>
           <div class="pagination" id="radar-pagination"></div>
@@ -854,6 +943,24 @@ function doLogin(){
   }else{document.getElementById('login-err').style.display='block';}
 }
 
+// ── MOBILE SIDEBAR ──
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  sb.classList.toggle('mobile-open');
+  ov.classList.toggle('open');
+}
+function fecharSidebar(){
+  document.getElementById('sidebar')?.classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay')?.classList.remove('open');
+}
+
+// Fechar sidebar ao navegar (mobile)
+const _origFiltrarLoja=typeof filtrarLoja!=='undefined'?filtrarLoja:null;
+document.addEventListener('click',e=>{
+  if(e.target.closest('.sidebar-item'))setTimeout(fecharSidebar,150);
+});
+
 // ── INIT ──
 function initApp(){
   initLojaNav();
@@ -1083,7 +1190,12 @@ function renderTabela(){
   if(pages>1){const prev=document.createElement('button');prev.className='page-btn';prev.innerHTML='‹';prev.onclick=()=>{if(paginaAtual>1){paginaAtual--;renderTabela();}};const next=document.createElement('button');next.className='page-btn';next.innerHTML='›';next.onclick=()=>{if(paginaAtual<pages){paginaAtual++;renderTabela();}};pag.insertBefore(prev,pag.firstChild);pag.appendChild(next);}
 
   const tbody=document.getElementById('tabela-body');
-  if(!page.length){tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📦</div>Nenhuma oferta encontrada</div></td></tr>`;return;}
+  if(!page.length){tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📦</div>Nenhuma oferta encontrada</div></td></tr>`;
+    document.getElementById('cards-mobile-body').innerHTML=`<div class="empty-state"><div class="empty-icon">📦</div>Nenhuma oferta encontrada</div>`;
+    return;
+  }
+  _lastPageMobile=page;
+  renderCardsMobile(page);
   tbody.innerHTML=page.map(o=>{
     const info=seloInfo(o.selo);
     const loja=lojaByVal(o.loja||'Amazon');
@@ -1652,7 +1764,10 @@ async function renderRadar(){
   }
 
   const tbody=document.getElementById('radar-body');
-  if(!page.length){tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📡</div>Nenhuma publicação encontrada</div></td></tr>`;return;}
+  if(!page.length){tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📡</div>Nenhuma publicação encontrada</div></td></tr>`;
+    renderRadarCardsMobile([]);return;
+  }
+  renderRadarCardsMobile(page);
   
   tbody.innerHTML=page.map(o=>{
     const lojaObj=lojaByVal(o.loja||'Amazon');
@@ -1723,6 +1838,12 @@ async function removerDoRadar(id){
 }
 
 function abrirRadarModal(o){
+  // Aceita objeto direto ou id string (chamado dos cards mobile)
+  if(typeof o==='string'||typeof o==='number'){
+    const found=todasOfertas.find(x=>x.id==o);
+    if(!found)return;
+    o=found;
+  }
   document.getElementById('radar-modal-id').value=o.id;
   document.getElementById('radar-modal-titulo').textContent=`Editar: ${o.nome_set||'Oferta'}`;
   document.getElementById('radar-modal-cupom').value=o.cupom||'';
@@ -1922,7 +2043,186 @@ async function gerarCard(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistorica2){
   btn.disabled=false; btn.childNodes[btn.childNodes.length-1].textContent=' Gerar card';
 }
 
-async function copiarImagem(id){
+// ── BAIXAR IMAGEM (mobile-friendly) ──
+function baixarImagem(id){
+  const canvas=document.getElementById('canvas-gen');
+  const link=document.createElement('a');
+  link.download=`wonderblocks-${id}.png`;
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+  showToast('⬇ Imagem baixada!','linear-gradient(135deg,#1d4ed8,#0ea5e9)');
+}
+
+// ── RENDER CARDS MOBILE ──
+function isMobile(){return window.innerWidth<=768;}
+
+function renderCardsMobile(page){
+  const container=document.getElementById('cards-mobile-body');
+  if(!container)return;
+  if(!page.length){container.innerHTML=`<div class="empty-state"><div class="empty-icon">📦</div>Nenhuma oferta encontrada</div>`;return;}
+  container.innerHTML=page.map(o=>{
+    const info=seloInfo(o.selo);
+    const imgSrc=o.imagem_url||`https://images.brickset.com/sets/images/${o.numero_set}-1.jpg`;
+    const imgFb=`https://img.bricklink.com/ItemImage/SN/0/${o.numero_set}-1.png`;
+    const isExp=expandedId===o.id;
+    const pausadoStyle=o.pausado?'opacity:.45;':'';
+    return`<div class="oferta-card" style="${pausadoStyle}">
+      <div class="oferta-card-header" onclick="toggleExpandMobile('${o.id}')">
+        <img class="oferta-card-thumb" src="${imgSrc}" alt="" onerror="this.src='${imgFb}'" loading="lazy">
+        <div class="oferta-card-info">
+          <div class="oferta-card-id">${o.numero_set||'—'}</div>
+          <div class="oferta-card-nome">${o.nome_set||'Oferta LEGO'}</div>
+          <div class="oferta-card-preco">
+            <span class="oferta-card-de">R$${fmt(o.preco_original)}</span>
+            <span class="oferta-card-por">R$${fmt(o.preco_final)}</span>
+            ${o.cupom?`<span style="font-size:10px;font-weight:700;color:var(--amber2);background:var(--amber-dim);padding:1px 6px;border-radius:8px;">${o.cupom}</span>`:''}
+          </div>
+        </div>
+        <svg class="oferta-card-chevron${isExp?' open':''}" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="oferta-card-badges">
+        <span class="badge-selo ${info.cls}" style="font-size:10px;"><span class="badge-dot"></span>${info.label}</span>
+        <span style="font-size:10px;color:var(--text3);">PPP R$${fmt(o.ppp)} · ${Math.round(o.desconto_pct||0)}% OFF · ${o.pecas||'—'} peças</span>
+      </div>
+      <div class="oferta-card-body${isExp?' open':''}">
+        <div class="oferta-card-row"><span class="oferta-card-row-label">MPH</span><span class="oferta-card-row-val">${o.mph?'R$'+fmt(o.mph):'—'}</span></div>
+        <div class="oferta-card-row"><span class="oferta-card-row-label">Peças</span><span class="oferta-card-row-val">${o.pecas||'—'}</span></div>
+        <div class="oferta-card-row"><span class="oferta-card-row-label">Desconto</span><span class="oferta-card-row-val">${Math.round(o.desconto_pct||0)}% OFF</span></div>
+        <div class="oferta-card-row"><span class="oferta-card-row-label">PPP</span><span class="oferta-card-row-val">R$${fmt(o.ppp)}</span></div>
+        ${o.mph?`<div class="oferta-card-row"><span class="oferta-card-row-label">MPH</span><span class="oferta-card-row-val">R$${fmt(o.mph)}</span></div>`:''}
+        <div class="oferta-card-actions">
+          <button class="btn-card-action btn-card-publish" onclick="publicarNoRadar('${o.id}')">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1L8 11M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Publicar
+          </button>
+          <button class="btn-card-action btn-card-edit" onclick='editarOferta(${JSON.stringify(o).replace(/'/g,"&#39;")})'>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3"/></svg>
+            Editar
+          </button>
+          <button class="btn-card-action btn-card-pause" onclick="togglePausar('${o.id}',${o.pausado?'true':'false'})">
+            ${o.pausado
+              ?'<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8l4-4v8L3 8zM9 4l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Reativar'
+              :'<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M6 3v10M10 3v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Pausar'}
+          </button>
+          <button class="btn-card-action btn-card-del" onclick="deletarOferta('${o.id}')">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M5 4V2h6v2M6 7v5M10 7v5M4 4l1 9h6l1-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Excluir
+          </button>
+        </div>
+        <!-- EXPAND: gerar card e copiar -->
+        <div class="oferta-card-expand${isExp?' open':''}" id="mobile-expand-${o.id}">
+          <div class="expand-preview-mobile" id="mobile-prev-${o.id}"><div class="expand-preview-ph" style="color:var(--text3);font-size:12px;text-align:center;">Clique em<br>"Gerar card"</div></div>
+          <button class="btn-publish-action-mobile btn-gen-card" id="mobile-btn-gen-${o.id}" onclick="gerarCardMobile('${o.id}','${o.loja||'Amazon'}','${info.label}','${imgSrc}','${imgFb}','${o.selo_card||o.tag_historica||''}','${o.selo_card2||''}')">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Gerar card
+          </button>
+          <button class="btn-publish-action-mobile btn-copy-img" id="mobile-btn-cimg-${o.id}" onclick="copiarImagem('${o.id}')" style="display:none;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.3"/></svg>
+            Copiar imagem
+          </button>
+          <button class="btn-publish-action-mobile" id="mobile-btn-baixar-${o.id}" onclick="baixarImagem('${o.id}')" style="display:none;background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Baixar imagem
+          </button>
+          <button class="btn-publish-action-mobile btn-copy-wpp" onclick='copiarWhatsApp(${JSON.stringify(o).replace(/'/g,"&#39;")})'>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.13 1 1 4.13 1 8c0 1.5.42 2.9 1.14 4.09L1 15l3-1.09A7 7 0 108 1z" stroke="currentColor" stroke-width="1.3"/></svg>
+            Copiar texto WhatsApp
+          </button>
+          <div class="expand-status" id="mobile-expand-status-${o.id}" style="display:none;font-size:11px;margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleExpandMobile(id){
+  expandedId=expandedId===id?null:id;
+  if(isMobile()) renderCardsMobile(_lastPageMobile||[]);
+  else renderTabela();
+}
+
+let _lastPageMobile=[];
+
+async function gerarCardMobile(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistorica2){
+  const btn=document.getElementById(`mobile-btn-gen-${id}`);
+  const status=document.getElementById(`mobile-expand-status-${id}`);
+  const prev=document.getElementById(`mobile-prev-${id}`);
+  if(btn){btn.disabled=true;btn.childNodes[btn.childNodes.length-1].textContent=' Gerando...';}
+  try{
+    const canvas=document.getElementById('canvas-gen');
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,1000,1000);
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,1000,1000);
+    const lojaObj=lojaByVal(loja);
+    const frame=await loadImg(lojaObj.frame);
+    ctx.drawImage(frame,0,0,1000,1000);
+    const urls=[imgUrl,imgFb].filter(Boolean);
+    let prodImg=null;
+    for(const u of urls){try{prodImg=await loadImg(u);break;}catch{}}
+    if(prodImg){
+      const maxW=700,maxH=700;
+      let w=prodImg.naturalWidth,h=prodImg.naturalHeight;
+      if(w>maxW){h=Math.round(h*(maxW/w));w=maxW;}
+      if(h>maxH){w=Math.round(w*(maxH/h));h=maxH;}
+      ctx.drawImage(prodImg,Math.round((1000-w)/2),Math.round((1000-h)/2)-20,w,h);
+    }
+    const seloFile=SELOS_CARD[selo]||'assets/bom.png';
+    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-40,40,220,220);}catch{}
+    const tagFiles=[tagHistorica,tagHistorica2].filter(t=>t&&TAG_SVGS[t]);
+    let tagY=40;
+    for(const tag of tagFiles){
+      try{
+        const tagImg=await loadImg(TAG_SVGS[tag]);
+        const maxTW=380;
+        const ratio=tagImg.naturalWidth>0?tagImg.naturalHeight/tagImg.naturalWidth:0.125;
+        const tw=maxTW,th=Math.max(Math.round(maxTW*ratio),40);
+        ctx.drawImage(tagImg,40,tagY,tw,th);
+        tagY+=th+10;
+      }catch(e){}
+    }
+    // Preview mobile
+    const pc=document.createElement('canvas');pc.width=1000;pc.height=1000;pc.getContext('2d').drawImage(canvas,0,0);pc.style.cssText='width:100%;height:100%;display:block;';
+    if(prev){prev.innerHTML='';prev.appendChild(pc);}
+    // Mostrar botões de copiar e baixar
+    const btnCimg=document.getElementById(`mobile-btn-cimg-${id}`);
+    const btnBaixar=document.getElementById(`mobile-btn-baixar-${id}`);
+    if(btnCimg) btnCimg.style.display='flex';
+    if(btnBaixar) btnBaixar.style.display='flex';
+    if(status){status.textContent='✓ Card pronto!';status.style.color='var(--green2)';status.style.display='block';}
+  }catch(e){
+    if(status){status.textContent='Erro: '+e.message;status.style.color='var(--red2)';status.style.display='block';}
+  }
+  if(btn){btn.disabled=false;btn.childNodes[btn.childNodes.length-1].textContent=' Gerar card';}
+}
+
+// ── RENDER RADAR CARDS MOBILE ──
+function renderRadarCardsMobile(page){
+  const container=document.getElementById('radar-cards-mobile-body');
+  if(!container)return;
+  if(!page||!page.length){container.innerHTML=`<div class="empty-state"><div class="empty-icon">📡</div>Nenhuma publicação</div>`;return;}
+  container.innerHTML=page.map(o=>{
+    const imgSrc=o.imagem_url||`https://images.brickset.com/sets/images/${o.numero_set}-1.jpg`;
+    const imgFb=`https://img.bricklink.com/ItemImage/SN/0/${o.numero_set}-1.png`;
+    const exp=o.expires_at?new Date(o.expires_at):null;
+    const dur=exp?timerStr(o.expires_at):'Sem expiração';
+    return`<div class="radar-card">
+      <div class="radar-card-header">
+        <img style="width:40px;height:40px;border-radius:6px;object-fit:contain;background:#fff;padding:2px;flex-shrink:0;" src="${imgSrc}" alt="" onerror="this.src='${imgFb}'" loading="lazy">
+        <div class="radar-card-info">
+          <div class="radar-card-nome">${o.nome_set||'Oferta LEGO'} <span style="color:var(--blue3);font-size:11px;">#${o.numero_set||''}</span></div>
+          <div class="radar-card-sub">${o.loja||'—'} · ${o.cupom?'🎟️ '+o.cupom+' · ':''} R$${fmt(o.preco_final)} · ${dur}</div>
+        </div>
+        <span class="radar-status-badge ${o.pausado?'radar-pausada':'radar-ativa'}">${o.pausado?'⏸ Pausada':'✅ Ativa'}</span>
+      </div>
+      <div class="radar-card-actions">
+        <button class="btn-sm" onclick="abrirRadarModal('${o.id}')" style="flex:1;">✏️ Editar</button>
+        <button class="btn-sm" onclick="togglePausar('${o.id}',${o.pausado})" style="flex:1;${o.pausado?'color:var(--green2);border-color:rgba(63,185,80,.3);':'color:var(--amber2);border-color:rgba(251,191,36,.3);'}">${o.pausado?'▶ Reativar':'⏸ Pausar'}</button>
+        <button class="btn-sm" onclick="removerDoRadar('${o.id}')" style="flex:1;color:var(--red2);border-color:rgba(248,81,73,.3);">🗑 Remover</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
   const canvas=document.getElementById('canvas-gen');
   try{
     await new Promise((res,rej)=>{canvas.toBlob(async blob=>{try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);res();}catch(e){rej(e);};},'image/png');});
