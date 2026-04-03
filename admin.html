@@ -958,7 +958,6 @@ function fecharSidebar(){
 }
 
 // Fechar sidebar ao navegar (mobile)
-const _origFiltrarLoja=typeof filtrarLoja!=='undefined'?filtrarLoja:null;
 document.addEventListener('click',e=>{
   if(e.target.closest('.sidebar-item'))setTimeout(fecharSidebar,150);
 });
@@ -2225,6 +2224,7 @@ function renderRadarCardsMobile(page){
   }).join('');
 }
 
+async function copiarImagem(id){
   const canvas=document.getElementById('canvas-gen');
   try{
     await new Promise((res,rej)=>{canvas.toBlob(async blob=>{try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);res();}catch(e){rej(e);};},'image/png');});
