@@ -2464,7 +2464,6 @@ function fillTextWrap(ctx, text, x, y, maxW, lineH){
 }
 
 async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFinal, ppp, selo){
-  // Botões de ambos os contextos (desktop e mobile)
   const btnDesk=document.getElementById(`btn-stories-${id}`);
   const btnMob =document.getElementById(`mobile-btn-stories-${id}`);
   const statusDesk=document.getElementById(`expand-status-${id}`);
@@ -2475,97 +2474,125 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
   try{
     const canvas=getStoriesCanvas();
     const ctx=canvas.getContext('2d');
+    // Canvas é 1080x1920
     ctx.clearRect(0,0,1080,1920);
 
-    // 1. Fundo branco
+    // ── 1. FUNDO BRANCO ──
     ctx.fillStyle='#ffffff';
     ctx.fillRect(0,0,1080,1920);
 
-    // 2. Foto do produto na área transparente do template
-    // Área: X 150-929, Y 409-1063 (779x654)
-    const prodArea={x:150,y:409,w:779,h:654};
+    // ── 2. FOTO DO PRODUTO na área transparente (X 150-929, Y 409-1064) ──
+    const prodArea={x:150, y:409, w:779, h:655};
     const urls=[imgSrc,imgFb].filter(Boolean);
     let prodImg=null;
     for(const u of urls){try{prodImg=await loadImg(u);break;}catch{}}
     if(prodImg){
-      const scaleW=prodArea.w/prodImg.naturalWidth, scaleH=prodArea.h/prodImg.naturalHeight;
-      const scale=Math.min(scaleW,scaleH);
-      const dw=Math.round(prodImg.naturalWidth*scale), dh=Math.round(prodImg.naturalHeight*scale);
-      const dx=prodArea.x+Math.round((prodArea.w-dw)/2), dy=prodArea.y+Math.round((prodArea.h-dh)/2);
-      ctx.drawImage(prodImg,dx,dy,dw,dh);
+      // Largura máxima 640px, proporcional
+      const maxW=Math.min(640, prodArea.w);
+      const maxH=prodArea.h;
+      const scale=Math.min(maxW/prodImg.naturalWidth, maxH/prodImg.naturalHeight);
+      const dw=Math.round(prodImg.naturalWidth*scale);
+      const dh=Math.round(prodImg.naturalHeight*scale);
+      const dx=prodArea.x+Math.round((prodArea.w-dw)/2);
+      const dy=prodArea.y+Math.round((prodArea.h-dh)/2);
+      ctx.drawImage(prodImg, dx, dy, dw, dh);
     }
 
-    // 3. Template por cima (com área transparente — mostra foto abaixo)
+    // ── 3. TEMPLATE por cima (transparência preserva foto) ──
     const frame=await loadImg(STORIES_FRAME);
     ctx.drawImage(frame,0,0,1080,1920);
 
-    // 4. Selo PPP — canto superior direito: 50px da direita, 285px do topo
+    // ── 4. SELO PPP — canto superior ESQUERDO: 50px da esquerda, 285px do topo ──
     const seloFile=SELOS_CARD[seloLabel]||'assets/bom.png';
     try{
       const seloImg=await loadImg(seloFile);
       const seloSize=220;
-      ctx.drawImage(seloImg, 1080-50-seloSize, 285, seloSize, seloSize);
+      ctx.drawImage(seloImg, 50, 285, seloSize, seloSize);
     }catch{}
 
-    // 5. Preço "De:" riscado — zona branca Y≈1085-1170, centro X=540
-    const dateFmt=new Date().toLocaleDateString('pt-BR');
-    const poFmt='R$'+fmt(precoOriginal);
-    const pfFmt='R$'+fmt(precoFinal);
-    const pppFmt='R$ '+fmt(ppp);
-
-    // Preço original riscado (pequeno, cinza)
+    // ── 5. PREÇO "De:" — zona branca Y 1084-1174, centro Y=1129 ──
+    // Inter, 30px, cinza, riscado, centralizado
+    const poFmt='De: R$'+fmt(precoOriginal);
+    ctx.save();
     ctx.textAlign='center';
     ctx.textBaseline='middle';
-    ctx.fillStyle='#666666';
-    ctx.font='bold 42px Inter, Arial, sans-serif';
-    ctx.fillText('De: '+poFmt, 540, 1118);
+    ctx.fillStyle='#777777';
+    ctx.font='600 30px Inter, Arial, sans-serif';
+    const strikeW=ctx.measureText(poFmt).width;
+    ctx.fillText(poFmt, 540, 1129);
     // Linha riscada
-    const strikeW=ctx.measureText('De: '+poFmt).width;
-    ctx.strokeStyle='#666666';
-    ctx.lineWidth=3;
+    ctx.strokeStyle='#777777';
+    ctx.lineWidth=2;
     ctx.beginPath();
-    ctx.moveTo(540-strikeW/2, 1118);
-    ctx.lineTo(540+strikeW/2, 1118);
+    ctx.moveTo(540-strikeW/2, 1129);
+    ctx.lineTo(540+strikeW/2, 1129);
     ctx.stroke();
+    ctx.restore();
 
-    // Preço final (grande, preto)
+    // ── 6. PREÇO POR — zona branca Y 1218-1276, centro Y=1247 ──
+    // Inter, 60px, preto, bold, centralizado
+    const pfFmt='R$'+fmt(precoFinal);
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
     ctx.fillStyle='#111111';
-    ctx.font='900 110px Inter, Arial Black, sans-serif';
-    // Ajustar tamanho se necessário
-    let pfSize=110;
-    while(ctx.measureText(pfFmt).width>680 && pfSize>60){pfSize-=4;ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;}
-    ctx.fillText(pfFmt, 540, 1255);
+    // Ajustar tamanho se não couber em 700px
+    let pfSize=60;
+    ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;
+    while(ctx.measureText(pfFmt).width>700 && pfSize>36){
+      pfSize-=2;
+      ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;
+    }
+    ctx.fillText(pfFmt, 540, 1247);
+    ctx.restore();
 
-    // 6. PPP pill — Y≈1310-1360, centro X=540
-    // Cor do emoji/círculo conforme selo
+    // ── 7. PPP PILL — zona preta Y 1282-1376, centro Y=1329 ──
     const pppEmoji=seloLabel==='MUITO BOM'?'🔵':seloLabel==='BOM'?'🟢':seloLabel==='NA MÉDIA'?'🟡':'🔴';
-    ctx.font='bold 44px Inter, Arial, sans-serif';
-    ctx.fillStyle='#111111';
-    ctx.fillText(`${pppEmoji} PPP: ${pppFmt}/peça`, 540, 1335);
-
-    // 7. Aviso de preço — abaixo do botão LINK (Y≈1600)
-    ctx.font='bold 34px Inter, Arial, sans-serif';
-    ctx.fillStyle='#111111';
-    ctx.fillText(STORIES_FRASE_AVISO, 540, 1620);
-    ctx.font='32px Inter, Arial, sans-serif';
-    ctx.fillStyle='#555555';
-    ctx.fillText('Preço verificado em '+dateFmt, 540, 1662);
-
-    // 8. Rodapé preto — Y≈1740-1920
-    ctx.font='36px Inter, Arial, sans-serif';
+    const pppFmt=`${pppEmoji} PPP: R$ ${fmt(ppp)}/peça`;
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
     ctx.fillStyle='#ffffff';
-    fillTextWrap(ctx, STORIES_FRASE_RODAPE, 540, 1790, 900, 52);
+    ctx.font='bold 36px Inter, Arial, sans-serif';
+    ctx.fillText(pppFmt, 540, 1329);
+    ctx.restore();
 
-    // 9. Mostrar botões de salvar e copiar link
+    // ── 8. AVISO DE PREÇO — zona azul Y 1436-1686 ──
+    // Abaixo do botão LINK (que está no template), centrado na zona azul inferior
+    // Aviso aparece em ~Y=1590-1660
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillStyle='#0a1a2e';
+    ctx.font='bold 34px Inter, Arial, sans-serif';
+    ctx.fillText(STORIES_FRASE_AVISO, 540, 1592);
+    ctx.fillStyle='#0a3a5a';
+    ctx.font='30px Inter, Arial, sans-serif';
+    ctx.fillText('Preço verificado em '+new Date().toLocaleDateString('pt-BR'), 540, 1638);
+    ctx.restore();
+
+    // ── 9. RODAPÉ PRETO Y 1686-1920 — Archivo ExtraCondensed 45px ──
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillStyle='#ffffff';
+    ctx.font='600 45px "Archivo Condensed", "Arial Narrow", Arial, sans-serif';
+    // Centro vertical do rodapé = 1686 + (1920-1686)/2 = 1803
+    const rodapeY=1720;
+    const rodapeMaxW=900;
+    fillTextWrap(ctx, STORIES_FRASE_RODAPE, 540, rodapeY, rodapeMaxW, 56);
+    ctx.restore();
+
+    // ── 10. Mostrar botões de salvar e copiar link ──
     ['btn-dl-stories-','btn-link-','mobile-btn-dl-stories-','mobile-btn-link-'].forEach(pfx=>{
       const el=document.getElementById(pfx+id);
       if(el) el.style.display='flex';
     });
-
     [statusDesk,statusMob].forEach(s=>{if(s){s.textContent='✓ Stories pronto!';s.style.color='var(--green2)';s.style.display='block';}});
 
   }catch(e){
     [statusDesk,statusMob].forEach(s=>{if(s){s.textContent='Erro: '+e.message;s.style.color='var(--red2)';s.style.display='block';}});
+    console.error('gerarStories erro:',e);
   }
 
   [btnDesk,btnMob].forEach(b=>{if(b){b.disabled=false;const t=b.childNodes[b.childNodes.length-1];if(t)t.textContent=' Gerar Stories';}});
