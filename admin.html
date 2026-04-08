@@ -2504,26 +2504,26 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
       ctx.drawImage(seloImg, 46, 221, 299, 299);
     }catch{}
 
-    // ── 5. PREÇO "De:" — zona branca Y:1083-1174, centro Y=1128 ──
-    // Inter 600, 30px, cinza #888, centralizado, com linha riscada
+    // ── 5. PREÇO "De:" — box BRANCO PEQUENO Y:1083-1174, centro Y=1128 ──
+    // Cor #169CFF conforme especificado, Inter 600 30px, com linha riscada
     const poFmt='De: R$'+fmt(precoOriginal);
     ctx.save();
     ctx.textAlign='center';
     ctx.textBaseline='middle';
-    ctx.fillStyle='#888888';
+    ctx.fillStyle='#169CFF';
     ctx.font='600 30px Inter, Arial, sans-serif';
     const sw=ctx.measureText(poFmt).width;
-    ctx.fillText(poFmt, 540, 1128);
-    ctx.strokeStyle='#888888';
+    ctx.fillText(poFmt, 540, 1112);
+    ctx.strokeStyle='#169CFF';
     ctx.lineWidth=2;
     ctx.beginPath();
-    ctx.moveTo(540-sw/2, 1128);
-    ctx.lineTo(540+sw/2, 1128);
+    ctx.moveTo(540-sw/2, 1112);
+    ctx.lineTo(540+sw/2, 1112);
     ctx.stroke();
     ctx.restore();
 
-    // ── 6. PREÇO POR — zona branca Y:1218-1276, centro Y=1247 ──
-    // Inter Black, começa 60px, reduz se não couber em 700px, texto branco
+    // ── 6. PREÇO POR — box BRANCO MAIOR Y:1218-1276, centro Y=1247 ──
+    // Texto BRANCO (box já é preto no template), Inter Black 60px
     const pfFmt='R$'+fmt(precoFinal);
     ctx.save();
     ctx.textAlign='center';
@@ -2538,15 +2538,15 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
     ctx.fillText(pfFmt, 540, 1247);
     ctx.restore();
 
-    // ── 7. PPP PILL — zona escura Y:1281-1375, centro Y=1328 ──
-    // Inter bold 34px, branco, com emoji colorido
+    // ── 7. PPP — box PRETO MENOR Y:1281-1375, centro Y=1328 ──
+    // Texto branco, Inter bold 34px
     const pppEmoji=seloLabel==='MUITO BOM'?'🔵':seloLabel==='BOM'?'🟢':seloLabel==='NA MÉDIA'?'🟡':'🔴';
     ctx.save();
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillStyle='#ffffff';
     ctx.font='bold 34px Inter, Arial, sans-serif';
-    ctx.fillText(`${pppEmoji} PPP: R$ ${fmt(ppp)}/peça`, 540, 1328);
+    ctx.fillText(`${pppEmoji} PPP: R$ ${fmt(ppp)}/peça`, 540, 1305);
     ctx.restore();
 
     // ── 8. Mostrar botões ──
