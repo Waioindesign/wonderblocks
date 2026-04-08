@@ -2504,19 +2504,40 @@ const CUPOM_TEMPLATES={
   'Amazon':       'assets/template_cupom_amazon.jpg',
   'Amazon Global':'assets/template_cupom_amazon.jpg',
   'Mercado Livre':'assets/template_cupom_ml.jpg',
-  'Magalu':       'assets/template_cupom_amazon.jpg', // fallback até ter template próprio
-  'Ri Happy':     'assets/template_cupom_amazon.jpg',
-  'LEGO BR':      'assets/template_cupom_amazon.jpg',
+  'Magalu':       'assets/template_cupom_magalu.jpg',
+  'Ri Happy':     'assets/template_cupom_amazon.jpg', // fallback até ter template próprio
+  'LEGO BR':      'assets/template_cupom_lego.jpg',
 };
 
-// Cor do texto por loja (baseado na cor do ticket)
+// Cor do texto por loja (baseado na cor do ticket — medido nos templates)
 const CUPOM_TEXT_COLOR={
-  'Amazon':'#000000',
+  'Amazon':       '#000000', // ticket laranja → texto preto
   'Amazon Global':'#000000',
-  'Mercado Livre':'#000000',
-  'Magalu':'#FFFFFF',
-  'Ri Happy':'#FFFFFF',
-  'LEGO BR':'#FFFFFF',
+  'Mercado Livre':'#000000', // ticket amarelo → texto preto
+  'Magalu':       '#FFFFFF', // ticket azul → texto branco
+  'Ri Happy':     '#000000',
+  'LEGO BR':      '#000000', // ticket amarelo → texto preto
+};
+
+// Coordenadas da área de texto por template (medidas pixel a pixel)
+// txtXStart = 15px após a linha tracejada | txtXEnd = 10px antes da borda direita
+const CUPOM_TEXT_COORDS={
+  'Amazon':       {xStart:355, xEnd:855}, // traço X=340, fim X=865
+  'Amazon Global':{xStart:355, xEnd:855},
+  'Mercado Livre':{xStart:355, xEnd:855}, // traço X=338, fim X=865
+  'Magalu':       {xStart:355, xEnd:862}, // traço X=338, fim X=872
+  'Ri Happy':     {xStart:355, xEnd:855},
+  'LEGO BR':      {xStart:200, xEnd:855}, // traço X=186, fim X=865 (logo menor)
+};
+
+// Cor da legenda por loja
+const CUPOM_LEGENDA_COLOR={
+  'Amazon':       '#FF6B01',
+  'Amazon Global':'#FF6B01',
+  'Mercado Livre':'#FFE600',
+  'Magalu':       '#FFFFFF',
+  'Ri Happy':     '#E3007C',
+  'LEGO BR':      '#D01012',
 };
 
 async function gerarCupomCard(){
@@ -2547,16 +2568,13 @@ async function gerarCupomCard(){
 
     const textColor=CUPOM_TEXT_COLOR[loja]||'#000000';
 
-    // ── ÁREA DO TICKET (medido pixel a pixel em ambos os templates) ──
-    // Ticket: X 105-865 | Y 357-643 | Centro Y=500
-    // Logo termina em X≈302 | Linha tracejada em X≈340
-    // Texto começa 15px após o traço: X=355 | Termina 10px antes da borda: X=855
-    // Área disponível: 500px | Centro: X=605
-    const txtXStart=355;
-    const txtXEnd=855;
-    const txtMaxW=txtXEnd-txtXStart; // 500px
-    const txtCenterX=(txtXStart+txtXEnd)/2; // X=605
-    const txtY=500; // centro vertical do ticket
+    // ── COORDENADAS DA ÁREA DE TEXTO (específicas por template) ──
+    const coords=CUPOM_TEXT_COORDS[loja]||{xStart:355,xEnd:855};
+    const txtXStart=coords.xStart;
+    const txtXEnd=coords.xEnd;
+    const txtMaxW=txtXEnd-txtXStart;
+    const txtCenterX=(txtXStart+txtXEnd)/2;
+    const txtY=500; // centro vertical do ticket (igual em todos os templates)
 
     // 2. Nome do cupom — centralizado na área disponível, fonte auto-ajustável
     ctx.textAlign='center';
@@ -2604,19 +2622,12 @@ async function gerarCupomCard(){
       // Legenda abaixo da descrição
       if(legenda){
         const legendaY=descY+(lines.length*lineH)+18;
-        // Cor da legenda = cor do ticket da loja
-        const legendaColor=loja==='Amazon'||loja==='Amazon Global'?'#FF6B01':
-                            loja==='Mercado Livre'?'#FFE600':
-                            loja==='Magalu'?'#0086FF':
-                            loja==='Ri Happy'?'#E3007C':'#D01012';
-        ctx.fillStyle=legendaColor;
+        ctx.fillStyle=CUPOM_LEGENDA_COLOR[loja]||'#FF6B01';
         ctx.font=`900 48px "Arial Black", Arial, sans-serif`;
         ctx.fillText(legenda, 500, legendaY);
       }
     } else if(legenda){
-      const legendaColor=loja==='Amazon'||loja==='Amazon Global'?'#FF6B01':
-                          loja==='Mercado Livre'?'#FFE600':'#FFFFFF';
-      ctx.fillStyle=legendaColor;
+      ctx.fillStyle=CUPOM_LEGENDA_COLOR[loja]||'#FF6B01';
       ctx.textAlign='center';
       ctx.textBaseline='top';
       ctx.font=`900 52px "Arial Black", Arial, sans-serif`;
