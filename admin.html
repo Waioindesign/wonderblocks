@@ -2437,10 +2437,7 @@ function copiarWhatsApp(o){
 }
 
 // ── STORIES ──
-// Frases editáveis — altere aqui quando quiser
-const STORIES_FRASE_RODAPE = 'Usando meu link, você me ajuda a manter o projeto e continuar buscando as melhores ofertas.';
-const STORIES_FRASE_AVISO  = 'Preço sujeito a alterações sem aviso prévio';
-const STORIES_FRAME        = 'assets/frame_stories.png';
+const STORIES_FRAME = 'assets/frame_stories.png';
 
 // Canvas dedicado para Stories (1080x1920)
 function getStoriesCanvas(){
@@ -2474,116 +2471,85 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
   try{
     const canvas=getStoriesCanvas();
     const ctx=canvas.getContext('2d');
-    // Canvas é 1080x1920
     ctx.clearRect(0,0,1080,1920);
 
-    // ── 1. FUNDO BRANCO ──
+    // ── 1. FUNDO BRANCO (fica atrás da foto) ──
     ctx.fillStyle='#ffffff';
     ctx.fillRect(0,0,1080,1920);
 
-    // ── 2. FOTO DO PRODUTO na área transparente (X 150-929, Y 409-1064) ──
-    const prodArea={x:150, y:409, w:779, h:655};
+    // ── 2. FOTO DO PRODUTO — área transparente X:150-929, Y:409-1064 ──
+    const prodX=150, prodY=409, prodW=779, prodH=655;
     const urls=[imgSrc,imgFb].filter(Boolean);
     let prodImg=null;
     for(const u of urls){try{prodImg=await loadImg(u);break;}catch{}}
     if(prodImg){
-      // Largura máxima 640px, proporcional
-      const maxW=Math.min(640, prodArea.w);
-      const maxH=prodArea.h;
-      const scale=Math.min(maxW/prodImg.naturalWidth, maxH/prodImg.naturalHeight);
+      // Proporcional, largura máxima 640px
+      const scale=Math.min(640/prodImg.naturalWidth, prodH/prodImg.naturalHeight);
       const dw=Math.round(prodImg.naturalWidth*scale);
       const dh=Math.round(prodImg.naturalHeight*scale);
-      const dx=prodArea.x+Math.round((prodArea.w-dw)/2);
-      const dy=prodArea.y+Math.round((prodArea.h-dh)/2);
-      ctx.drawImage(prodImg, dx, dy, dw, dh);
+      const dx=prodX+Math.round((prodW-dw)/2);
+      const dy=prodY+Math.round((prodH-dh)/2);
+      ctx.drawImage(prodImg,dx,dy,dw,dh);
     }
 
-    // ── 3. TEMPLATE por cima (transparência preserva foto) ──
+    // ── 3. TEMPLATE por cima (preserva transparência sobre foto) ──
     const frame=await loadImg(STORIES_FRAME);
     ctx.drawImage(frame,0,0,1080,1920);
 
-    // ── 4. SELO PPP — canto superior ESQUERDO: 50px da esquerda, 285px do topo ──
+    // ── 4. SELO PPP — canto superior esquerdo ──
+    // Guia Figma: X=46, Y=221, tamanho 299×299px
     const seloFile=SELOS_CARD[seloLabel]||'assets/bom.png';
     try{
       const seloImg=await loadImg(seloFile);
-      const seloSize=220;
-      ctx.drawImage(seloImg, 50, 285, seloSize, seloSize);
+      ctx.drawImage(seloImg, 46, 221, 299, 299);
     }catch{}
 
-    // ── 5. PREÇO "De:" — zona branca Y 1084-1174, centro Y=1129 ──
-    // Inter, 30px, cinza, riscado, centralizado
+    // ── 5. PREÇO "De:" — zona branca Y:1083-1174, centro Y=1128 ──
+    // Inter 600, 30px, cinza #888, centralizado, com linha riscada
     const poFmt='De: R$'+fmt(precoOriginal);
     ctx.save();
     ctx.textAlign='center';
     ctx.textBaseline='middle';
-    ctx.fillStyle='#777777';
+    ctx.fillStyle='#888888';
     ctx.font='600 30px Inter, Arial, sans-serif';
-    const strikeW=ctx.measureText(poFmt).width;
-    ctx.fillText(poFmt, 540, 1129);
-    // Linha riscada
-    ctx.strokeStyle='#777777';
+    const sw=ctx.measureText(poFmt).width;
+    ctx.fillText(poFmt, 540, 1128);
+    ctx.strokeStyle='#888888';
     ctx.lineWidth=2;
     ctx.beginPath();
-    ctx.moveTo(540-strikeW/2, 1129);
-    ctx.lineTo(540+strikeW/2, 1129);
+    ctx.moveTo(540-sw/2, 1128);
+    ctx.lineTo(540+sw/2, 1128);
     ctx.stroke();
     ctx.restore();
 
-    // ── 6. PREÇO POR — zona branca Y 1218-1276, centro Y=1247 ──
-    // Inter, 60px, preto, bold, centralizado
+    // ── 6. PREÇO POR — zona branca Y:1218-1276, centro Y=1247 ──
+    // Inter Black, começa 60px, reduz se não couber em 700px, texto branco
     const pfFmt='R$'+fmt(precoFinal);
     ctx.save();
     ctx.textAlign='center';
     ctx.textBaseline='middle';
-    ctx.fillStyle='#111111';
-    // Ajustar tamanho se não couber em 700px
+    ctx.fillStyle='#ffffff';
     let pfSize=60;
     ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;
-    while(ctx.measureText(pfFmt).width>700 && pfSize>36){
+    while(ctx.measureText(pfFmt).width>680 && pfSize>32){
       pfSize-=2;
       ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;
     }
     ctx.fillText(pfFmt, 540, 1247);
     ctx.restore();
 
-    // ── 7. PPP PILL — zona preta Y 1282-1376, centro Y=1329 ──
+    // ── 7. PPP PILL — zona escura Y:1281-1375, centro Y=1328 ──
+    // Inter bold 34px, branco, com emoji colorido
     const pppEmoji=seloLabel==='MUITO BOM'?'🔵':seloLabel==='BOM'?'🟢':seloLabel==='NA MÉDIA'?'🟡':'🔴';
-    const pppFmt=`${pppEmoji} PPP: R$ ${fmt(ppp)}/peça`;
     ctx.save();
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillStyle='#ffffff';
-    ctx.font='bold 36px Inter, Arial, sans-serif';
-    ctx.fillText(pppFmt, 540, 1329);
-    ctx.restore();
-
-    // ── 8. AVISO DE PREÇO — zona azul Y 1436-1686 ──
-    // Abaixo do botão LINK (que está no template), centrado na zona azul inferior
-    // Aviso aparece em ~Y=1590-1660
-    ctx.save();
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillStyle='#0a1a2e';
     ctx.font='bold 34px Inter, Arial, sans-serif';
-    ctx.fillText(STORIES_FRASE_AVISO, 540, 1592);
-    ctx.fillStyle='#0a3a5a';
-    ctx.font='30px Inter, Arial, sans-serif';
-    ctx.fillText('Preço verificado em '+new Date().toLocaleDateString('pt-BR'), 540, 1638);
+    ctx.fillText(`${pppEmoji} PPP: R$ ${fmt(ppp)}/peça`, 540, 1328);
     ctx.restore();
 
-    // ── 9. RODAPÉ PRETO Y 1686-1920 — Archivo ExtraCondensed 45px ──
-    ctx.save();
-    ctx.textAlign='center';
-    ctx.textBaseline='top';
-    ctx.fillStyle='#ffffff';
-    ctx.font='600 45px "Archivo Condensed", "Arial Narrow", Arial, sans-serif';
-    // Centro vertical do rodapé = 1686 + (1920-1686)/2 = 1803
-    const rodapeY=1720;
-    const rodapeMaxW=900;
-    fillTextWrap(ctx, STORIES_FRASE_RODAPE, 540, rodapeY, rodapeMaxW, 56);
-    ctx.restore();
-
-    // ── 10. Mostrar botões de salvar e copiar link ──
+    // ── 8. Mostrar botões ──
     ['btn-dl-stories-','btn-link-','mobile-btn-dl-stories-','mobile-btn-link-'].forEach(pfx=>{
       const el=document.getElementById(pfx+id);
       if(el) el.style.display='flex';
@@ -2594,7 +2560,6 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
     [statusDesk,statusMob].forEach(s=>{if(s){s.textContent='Erro: '+e.message;s.style.color='var(--red2)';s.style.display='block';}});
     console.error('gerarStories erro:',e);
   }
-
   [btnDesk,btnMob].forEach(b=>{if(b){b.disabled=false;const t=b.childNodes[b.childNodes.length-1];if(t)t.textContent=' Gerar Stories';}});
 }
 
