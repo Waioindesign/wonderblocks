@@ -2519,15 +2519,15 @@ const CUPOM_TEXT_COLOR={
   'LEGO BR':      '#000000', // ticket amarelo → texto preto
 };
 
-// Coordenadas da área de texto por template (medidas pixel a pixel)
-// txtXStart = 15px após a linha tracejada | txtXEnd = 10px antes da borda direita
+// Coordenadas da área de texto — iguais em todos os templates
+// Traço em X≈340, fim ticket X≈865 | Texto: X 355-855, centro X=605, Y=500
 const CUPOM_TEXT_COORDS={
-  'Amazon':       {xStart:355, xEnd:855}, // traço X=340, fim X=865
+  'Amazon':       {xStart:355, xEnd:855},
   'Amazon Global':{xStart:355, xEnd:855},
-  'Mercado Livre':{xStart:355, xEnd:855}, // traço X=338, fim X=865
-  'Magalu':       {xStart:355, xEnd:862}, // traço X=338, fim X=872
+  'Mercado Livre':{xStart:355, xEnd:855},
+  'Magalu':       {xStart:355, xEnd:855},
   'Ri Happy':     {xStart:355, xEnd:855},
-  'LEGO BR':      {xStart:200, xEnd:855}, // traço X=186, fim X=865 (logo menor)
+  'LEGO BR':      {xStart:355, xEnd:855},
 };
 
 // Cor da legenda por loja
