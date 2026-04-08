@@ -2547,26 +2547,27 @@ async function gerarCupomCard(){
 
     const textColor=CUPOM_TEXT_COLOR[loja]||'#000000';
 
-    // ── ÁREA DO TICKET: X 105-860, Y 360-640, centro Y=500 ──
-    // Linha tracejada em X≈250. Texto começa em X=260+10px de margem = X=270
-    // Área útil: X 270-850 → largura máxima = 580px
-    const txtXStart=270;  // início do texto (10px após a linha tracejada)
-    const txtXEnd=850;    // fim do texto (10px antes da borda direita do ticket)
-    const txtMaxW=txtXEnd-txtXStart; // 580px disponíveis
-    const txtCenterX=(txtXStart+txtXEnd)/2; // centro da área = X=560
-    const txtY=500;   // centro vertical do ticket
+    // ── ÁREA DO TICKET (medido pixel a pixel em ambos os templates) ──
+    // Ticket: X 105-865 | Y 357-643 | Centro Y=500
+    // Logo termina em X≈302 | Linha tracejada em X≈340
+    // Texto começa 15px após o traço: X=355 | Termina 10px antes da borda: X=855
+    // Área disponível: 500px | Centro: X=605
+    const txtXStart=355;
+    const txtXEnd=855;
+    const txtMaxW=txtXEnd-txtXStart; // 500px
+    const txtCenterX=(txtXStart+txtXEnd)/2; // X=605
+    const txtY=500; // centro vertical do ticket
 
-    // 2. Nome do cupom — alinhado ao centro da área disponível
+    // 2. Nome do cupom — centralizado na área disponível, fonte auto-ajustável
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillStyle=textColor;
 
-    // Começar com fonte grande e encolher até caber em txtMaxW (com margem de 10px em cada lado)
-    const maxFit=txtMaxW-20; // margem total de 20px
-    let fontSize=120;
+    // Começar em 110px e reduzir de 1 em 1 até caber (20px de margem total = 10px cada lado)
+    let fontSize=110;
     ctx.font=`900 ${fontSize}px "Arial Black", Arial, sans-serif`;
-    while(ctx.measureText(nome).width>maxFit && fontSize>28){
-      fontSize-=2;
+    while(ctx.measureText(nome).width > txtMaxW-20 && fontSize > 22){
+      fontSize -= 1;
       ctx.font=`900 ${fontSize}px "Arial Black", Arial, sans-serif`;
     }
     ctx.fillText(nome, txtCenterX, txtY);
