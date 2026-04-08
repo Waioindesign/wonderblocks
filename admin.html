@@ -2499,14 +2499,24 @@ function initCupomListeners(){
   });
 }
 
-// Cores das lojas para o card de cupom
-const CUPOM_CORES={
-  'Amazon':      {bg:'#FF9900', text:'#000000', badge:'#000000', badgeText:'#FF9900'},
-  'Amazon Global':{bg:'#FF9900', text:'#000000', badge:'#000000', badgeText:'#FF9900'},
-  'Mercado Livre':{bg:'#FFE600', text:'#000000', badge:'#000000', badgeText:'#FFE600'},
-  'Magalu':      {bg:'#0086FF', text:'#FFFFFF', badge:'#FFFFFF', badgeText:'#0086FF'},
-  'Ri Happy':    {bg:'#E3007C', text:'#FFFFFF', badge:'#FFFFFF', badgeText:'#E3007C'},
-  'LEGO BR':     {bg:'#D01012', text:'#FFFFFF', badge:'#FFFFFF', badgeText:'#D01012'},
+// Templates por loja
+const CUPOM_TEMPLATES={
+  'Amazon':       'assets/template_cupom_amazon.jpg',
+  'Amazon Global':'assets/template_cupom_amazon.jpg',
+  'Mercado Livre':'assets/template_cupom_ml.jpg',
+  'Magalu':       'assets/template_cupom_amazon.jpg', // fallback até ter template próprio
+  'Ri Happy':     'assets/template_cupom_amazon.jpg',
+  'LEGO BR':      'assets/template_cupom_amazon.jpg',
+};
+
+// Cor do texto por loja (baseado na cor do ticket)
+const CUPOM_TEXT_COLOR={
+  'Amazon':'#000000',
+  'Amazon Global':'#000000',
+  'Mercado Livre':'#000000',
+  'Magalu':'#FFFFFF',
+  'Ri Happy':'#FFFFFF',
+  'LEGO BR':'#FFFFFF',
 };
 
 async function gerarCupomCard(){
@@ -2530,99 +2540,47 @@ async function gerarCupomCard(){
     const ctx=canvas.getContext('2d');
     ctx.clearRect(0,0,1000,1000);
 
-    const lojaObj=lojaByVal(loja);
-    const cores=CUPOM_CORES[loja]||CUPOM_CORES['Amazon'];
+    // 1. Carregar e desenhar o template
+    const templateSrc=CUPOM_TEMPLATES[loja]||CUPOM_TEMPLATES['Amazon'];
+    const template=await loadImg(templateSrc);
+    ctx.drawImage(template,0,0,1000,1000);
 
-    // 1. Frame da loja como fundo
-    try{
-      const frame=await loadImg(lojaObj.frame);
-      ctx.drawImage(frame,0,0,1000,1000);
-    }catch{
-      ctx.fillStyle='#111';
-      ctx.fillRect(0,0,1000,1000);
-    }
+    const textColor=CUPOM_TEXT_COLOR[loja]||'#000000';
 
-    // 2. Overlay escuro semitransparente para contraste
-    ctx.fillStyle='rgba(0,0,0,0.55)';
-    ctx.fillRect(0,0,1000,1000);
+    // ── ÁREA DO TICKET: X 280-860, Y 360-640, centro Y=500 ──
+    // Área útil para o texto (após a linha tracejada ~X=270)
+    const txtX=570;   // centro horizontal da área de texto
+    const txtY=500;   // centro vertical do ticket
+    const txtMaxW=560; // largura máxima (860-280=580, deixar margem)
 
-    // 3. Badge "ALERTA DE CUPOM!" no topo
-    const badgeY=120;
-    const badgeW=680, badgeH=80, badgeR=40;
-    const badgeX=(1000-badgeW)/2;
-    ctx.fillStyle='rgba(0,0,0,0.75)';
-    roundRect(ctx, badgeX, badgeY-badgeH/2, badgeW, badgeH, badgeR);
-    ctx.fill();
-    ctx.font='bold 34px Inter, Arial, sans-serif';
-    ctx.fillStyle='#FFFFFF';
+    // 2. Nome do cupom — centralizado no espaço do ticket
     ctx.textAlign='center';
     ctx.textBaseline='middle';
-    ctx.fillText('🔔  ALERTA DE CUPOM!', 500, badgeY);
-
-    // 4. Ticket do cupom (forma de ingresso)
-    const ticketY=420, ticketW=780, ticketH=260, ticketR=28;
-    const ticketX=(1000-ticketW)/2;
-    // Sombra
-    ctx.shadowColor='rgba(0,0,0,0.5)';
-    ctx.shadowBlur=30;
-    ctx.fillStyle=cores.bg;
-    roundRect(ctx, ticketX, ticketY-ticketH/2, ticketW, ticketH, ticketR);
-    ctx.fill();
-    ctx.shadowBlur=0;
-
-    // Semicírculos de corte do ticket (esquerda e direita)
-    const notchY=ticketY, notchR=24;
-    ctx.fillStyle='rgba(0,0,0,0.55)'; // mesma cor do overlay
-    ctx.beginPath(); ctx.arc(ticketX, notchY, notchR, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(ticketX+ticketW, notchY, notchR, 0, Math.PI*2); ctx.fill();
-
-    // Linha tracejada no centro do ticket
-    const divX=ticketX+230;
-    ctx.setLineDash([12,10]);
-    ctx.strokeStyle=`rgba(0,0,0,0.3)`;
-    ctx.lineWidth=3;
-    ctx.beginPath();
-    ctx.moveTo(divX, ticketY-ticketH/2+20);
-    ctx.lineTo(divX, ticketY+ticketH/2-20);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Logo da loja no lado esquerdo do ticket
-    try{
-      const logo=await loadImg(lojaObj.logo);
-      const logoSize=140, logoX=ticketX+45, logoY=ticketY-logoSize/2;
-      // Fundo branco arredondado para o logo
-      ctx.fillStyle='#FFFFFF';
-      roundRect(ctx, logoX, logoY, logoSize, logoSize, 20);
-      ctx.fill();
-      ctx.drawImage(logo, logoX+10, logoY+10, logoSize-20, logoSize-20);
-    }catch{}
-
-    // Nome do cupom no lado direito
-    const textAreaX=divX+40, textAreaW=ticketX+ticketW-divX-60;
-    ctx.fillStyle=cores.text;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
+    ctx.fillStyle=textColor;
 
     // Ajustar tamanho da fonte ao comprimento do nome
-    let fontSize=nome.length<=8?82:nome.length<=12?68:nome.length<=16?56:46;
-    ctx.font=`900 ${fontSize}px Inter, Arial Black, sans-serif`;
-    // Verificar se cabe
-    while(ctx.measureText(nome).width>textAreaW-20 && fontSize>32){
+    let fontSize=nome.length<=6?110:nome.length<=8?96:nome.length<=10?82:nome.length<=13?68:nome.length<=16?56:46;
+    ctx.font=`900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+    // Encolher se não couber
+    while(ctx.measureText(nome).width>txtMaxW-10 && fontSize>30){
       fontSize-=4;
-      ctx.font=`900 ${fontSize}px Inter, Arial Black, sans-serif`;
+      ctx.font=`900 ${fontSize}px "Arial Black", Arial, sans-serif`;
     }
-    ctx.fillText(nome, textAreaX+textAreaW/2, ticketY);
+    ctx.fillText(nome, txtX, txtY);
 
-    // 5. Texto descritivo abaixo do ticket
+    // ── TEXTOS ABAIXO DO TICKET ──
+    // Fundo é preto → texto branco
+    // Desc começa em Y=680 (abaixo do ticket Y=640 + margem)
+
     if(desc){
       ctx.fillStyle='#FFFFFF';
       ctx.textAlign='center';
       ctx.textBaseline='top';
-      const maxDescW=820;
-      let descSize=38;
+      const maxDescW=860;
+      let descSize=nome.length>0?40:44;
       ctx.font=`700 ${descSize}px Inter, Arial, sans-serif`;
-      // Quebrar linha se necessário
+
+      // Quebrar em linhas se necessário
       const words=desc.split(' ');
       const lines=[];
       let cur='';
@@ -2632,29 +2590,36 @@ async function gerarCupomCard(){
         else cur=test;
       }
       if(cur) lines.push(cur);
-      const lineH=descSize+10;
-      const totalH=lines.length*lineH;
-      let descY=ticketY+ticketH/2+50;
+
+      const lineH=descSize+12;
+      let descY=670;
       lines.forEach((line,i)=>{
         ctx.fillText(line, 500, descY+i*lineH);
       });
 
-      // 6. Legenda em destaque (cor da loja)
+      // Legenda abaixo da descrição
       if(legenda){
-        const legendaY=descY+totalH+20;
-        ctx.font=`900 42px Inter, Arial Black, sans-serif`;
-        ctx.fillStyle=cores.bg;
+        const legendaY=descY+(lines.length*lineH)+18;
+        // Cor da legenda = cor do ticket da loja
+        const legendaColor=loja==='Amazon'||loja==='Amazon Global'?'#FF6B01':
+                            loja==='Mercado Livre'?'#FFE600':
+                            loja==='Magalu'?'#0086FF':
+                            loja==='Ri Happy'?'#E3007C':'#D01012';
+        ctx.fillStyle=legendaColor;
+        ctx.font=`900 48px "Arial Black", Arial, sans-serif`;
         ctx.fillText(legenda, 500, legendaY);
       }
     } else if(legenda){
-      ctx.fillStyle=cores.bg;
+      const legendaColor=loja==='Amazon'||loja==='Amazon Global'?'#FF6B01':
+                          loja==='Mercado Livre'?'#FFE600':'#FFFFFF';
+      ctx.fillStyle=legendaColor;
       ctx.textAlign='center';
       ctx.textBaseline='top';
-      ctx.font=`900 52px Inter, Arial Black, sans-serif`;
-      ctx.fillText(legenda, 500, ticketY+ticketH/2+60);
+      ctx.font=`900 52px "Arial Black", Arial, sans-serif`;
+      ctx.fillText(legenda, 500, 680);
     }
 
-    // 7. Exibir preview inline
+    // 3. Preview inline
     const pc=document.createElement('canvas');
     pc.width=1000; pc.height=1000;
     pc.getContext('2d').drawImage(canvas,0,0);
@@ -2677,21 +2642,6 @@ async function gerarCupomCard(){
 
   btn.disabled=false;
   btn.childNodes[btn.childNodes.length-1].textContent=' Gerar card';
-}
-
-// Utilitário para desenhar retângulos arredondados
-function roundRect(ctx, x, y, w, h, r){
-  ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y);
-  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-  ctx.lineTo(x+w, y+h-r);
-  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-  ctx.lineTo(x+r, y+h);
-  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-  ctx.lineTo(x, y+r);
-  ctx.quadraticCurveTo(x, y, x+r, y);
-  ctx.closePath();
 }
 
 async function copiarCupomImagem(){
