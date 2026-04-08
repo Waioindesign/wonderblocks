@@ -1372,6 +1372,19 @@ function renderTabela(){
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.13 1 1 4.13 1 8c0 1.5.42 2.9 1.14 4.09L1 15l3-1.09A7 7 0 108 1z" stroke="currentColor" stroke-width="1.3"/></svg>
             Copiar texto WhatsApp
           </button>
+          <hr style="border:none;border-top:1px solid var(--border);margin:4px 0;">
+          <button class="btn-publish-action" id="btn-stories-${o.id}" onclick="gerarStories('${o.id}','${info.label}','${imgSrc}','${imgFb}',${o.preco_original},${o.preco_final},${o.ppp},'${o.selo||''}')" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="1" width="6" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 4h10M3 8h10M3 12h10" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".4"/></svg>
+            Gerar Stories
+          </button>
+          <button class="btn-publish-action" id="btn-dl-stories-${o.id}" onclick="baixarStories('${o.id}','${o.link||''}')" style="display:none;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Salvar Stories
+          </button>
+          <button class="btn-publish-action" id="btn-link-${o.id}" onclick="copiarLink('${o.link||''}')" style="display:none;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3.5 3.5 0 004.95 0l2-2a3.5 3.5 0 00-4.95-4.95l-1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 6.5a3.5 3.5 0 00-4.95 0l-2 2a3.5 3.5 0 004.95 4.95l1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Copiar link
+          </button>
           <div class="expand-status" id="expand-status-${o.id}"></div>
         </div>
       </div>
@@ -2252,6 +2265,19 @@ function renderCardsMobile(page){
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.13 1 1 4.13 1 8c0 1.5.42 2.9 1.14 4.09L1 15l3-1.09A7 7 0 108 1z" stroke="currentColor" stroke-width="1.3"/></svg>
             Copiar texto WhatsApp
           </button>
+          <hr style="border:none;border-top:1px solid var(--border);margin:4px 0;">
+          <button class="btn-publish-action-mobile" id="mobile-btn-stories-${o.id}" onclick="gerarStories('${o.id}','${info.label}','${imgSrc}','${imgFb}',${o.preco_original},${o.preco_final},${o.ppp},'${o.selo||''}')" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="1" width="6" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+            Gerar Stories
+          </button>
+          <button class="btn-publish-action-mobile" id="mobile-btn-dl-stories-${o.id}" onclick="baixarStories('${o.id}','${o.link||''}')" style="display:none;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Salvar Stories
+          </button>
+          <button class="btn-publish-action-mobile" id="mobile-btn-link-${o.id}" onclick="copiarLink('${o.link||''}')" style="display:none;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5a3.5 3.5 0 004.95 0l2-2a3.5 3.5 0 00-4.95-4.95l-1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 6.5a3.5 3.5 0 00-4.95 0l-2 2a3.5 3.5 0 004.95 4.95l1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Copiar link
+          </button>
           <div class="expand-status" id="mobile-expand-status-${o.id}" style="display:none;font-size:11px;margin-top:4px;"></div>
         </div>
       </div>
@@ -2408,6 +2434,169 @@ function copiarWhatsApp(o){
   L.push(rodape);
 
   navigator.clipboard.writeText(L.join('\n')).then(()=>showToast('✓ Texto copiado!','#238636'));
+}
+
+// ── STORIES ──
+// Frases editáveis — altere aqui quando quiser
+const STORIES_FRASE_RODAPE = 'Usando meu link, você me ajuda a manter o projeto e continuar buscando as melhores ofertas.';
+const STORIES_FRASE_AVISO  = 'Preço sujeito a alterações sem aviso prévio';
+const STORIES_FRAME        = 'assets/frame_stories.png';
+
+// Canvas dedicado para Stories (1080x1920)
+function getStoriesCanvas(){
+  let c=document.getElementById('canvas-stories');
+  if(!c){c=document.createElement('canvas');c.id='canvas-stories';c.width=1080;c.height=1920;c.style.display='none';document.body.appendChild(c);}
+  return c;
+}
+
+// Função auxiliar: texto multi-linha
+function fillTextWrap(ctx, text, x, y, maxW, lineH){
+  const words=text.split(' ');
+  let line='', lines=[];
+  for(const w of words){
+    const t=line?line+' '+w:w;
+    if(ctx.measureText(t).width>maxW){lines.push(line);line=w;}
+    else line=t;
+  }
+  if(line) lines.push(line);
+  lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineH));
+  return lines.length;
+}
+
+async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFinal, ppp, selo){
+  // Botões de ambos os contextos (desktop e mobile)
+  const btnDesk=document.getElementById(`btn-stories-${id}`);
+  const btnMob =document.getElementById(`mobile-btn-stories-${id}`);
+  const statusDesk=document.getElementById(`expand-status-${id}`);
+  const statusMob =document.getElementById(`mobile-expand-status-${id}`);
+
+  [btnDesk,btnMob].forEach(b=>{if(b){b.disabled=true;const t=b.childNodes[b.childNodes.length-1];if(t)t.textContent=' Gerando...';}});
+
+  try{
+    const canvas=getStoriesCanvas();
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,1080,1920);
+
+    // 1. Fundo branco
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,1080,1920);
+
+    // 2. Foto do produto na área transparente do template
+    // Área: X 150-929, Y 409-1063 (779x654)
+    const prodArea={x:150,y:409,w:779,h:654};
+    const urls=[imgSrc,imgFb].filter(Boolean);
+    let prodImg=null;
+    for(const u of urls){try{prodImg=await loadImg(u);break;}catch{}}
+    if(prodImg){
+      const scaleW=prodArea.w/prodImg.naturalWidth, scaleH=prodArea.h/prodImg.naturalHeight;
+      const scale=Math.min(scaleW,scaleH);
+      const dw=Math.round(prodImg.naturalWidth*scale), dh=Math.round(prodImg.naturalHeight*scale);
+      const dx=prodArea.x+Math.round((prodArea.w-dw)/2), dy=prodArea.y+Math.round((prodArea.h-dh)/2);
+      ctx.drawImage(prodImg,dx,dy,dw,dh);
+    }
+
+    // 3. Template por cima (com área transparente — mostra foto abaixo)
+    const frame=await loadImg(STORIES_FRAME);
+    ctx.drawImage(frame,0,0,1080,1920);
+
+    // 4. Selo PPP — canto superior direito: 50px da direita, 285px do topo
+    const seloFile=SELOS_CARD[seloLabel]||'assets/bom.png';
+    try{
+      const seloImg=await loadImg(seloFile);
+      const seloSize=220;
+      ctx.drawImage(seloImg, 1080-50-seloSize, 285, seloSize, seloSize);
+    }catch{}
+
+    // 5. Preço "De:" riscado — zona branca Y≈1085-1170, centro X=540
+    const dateFmt=new Date().toLocaleDateString('pt-BR');
+    const poFmt='R$'+fmt(precoOriginal);
+    const pfFmt='R$'+fmt(precoFinal);
+    const pppFmt='R$ '+fmt(ppp);
+
+    // Preço original riscado (pequeno, cinza)
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillStyle='#666666';
+    ctx.font='bold 42px Inter, Arial, sans-serif';
+    ctx.fillText('De: '+poFmt, 540, 1118);
+    // Linha riscada
+    const strikeW=ctx.measureText('De: '+poFmt).width;
+    ctx.strokeStyle='#666666';
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(540-strikeW/2, 1118);
+    ctx.lineTo(540+strikeW/2, 1118);
+    ctx.stroke();
+
+    // Preço final (grande, preto)
+    ctx.fillStyle='#111111';
+    ctx.font='900 110px Inter, Arial Black, sans-serif';
+    // Ajustar tamanho se necessário
+    let pfSize=110;
+    while(ctx.measureText(pfFmt).width>680 && pfSize>60){pfSize-=4;ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;}
+    ctx.fillText(pfFmt, 540, 1255);
+
+    // 6. PPP pill — Y≈1310-1360, centro X=540
+    // Cor do emoji/círculo conforme selo
+    const pppEmoji=seloLabel==='MUITO BOM'?'🔵':seloLabel==='BOM'?'🟢':seloLabel==='NA MÉDIA'?'🟡':'🔴';
+    ctx.font='bold 44px Inter, Arial, sans-serif';
+    ctx.fillStyle='#111111';
+    ctx.fillText(`${pppEmoji} PPP: ${pppFmt}/peça`, 540, 1335);
+
+    // 7. Aviso de preço — abaixo do botão LINK (Y≈1600)
+    ctx.font='bold 34px Inter, Arial, sans-serif';
+    ctx.fillStyle='#111111';
+    ctx.fillText(STORIES_FRASE_AVISO, 540, 1620);
+    ctx.font='32px Inter, Arial, sans-serif';
+    ctx.fillStyle='#555555';
+    ctx.fillText('Preço verificado em '+dateFmt, 540, 1662);
+
+    // 8. Rodapé preto — Y≈1740-1920
+    ctx.font='36px Inter, Arial, sans-serif';
+    ctx.fillStyle='#ffffff';
+    fillTextWrap(ctx, STORIES_FRASE_RODAPE, 540, 1790, 900, 52);
+
+    // 9. Mostrar botões de salvar e copiar link
+    ['btn-dl-stories-','btn-link-','mobile-btn-dl-stories-','mobile-btn-link-'].forEach(pfx=>{
+      const el=document.getElementById(pfx+id);
+      if(el) el.style.display='flex';
+    });
+
+    [statusDesk,statusMob].forEach(s=>{if(s){s.textContent='✓ Stories pronto!';s.style.color='var(--green2)';s.style.display='block';}});
+
+  }catch(e){
+    [statusDesk,statusMob].forEach(s=>{if(s){s.textContent='Erro: '+e.message;s.style.color='var(--red2)';s.style.display='block';}});
+  }
+
+  [btnDesk,btnMob].forEach(b=>{if(b){b.disabled=false;const t=b.childNodes[b.childNodes.length-1];if(t)t.textContent=' Gerar Stories';}});
+}
+
+async function baixarStories(id, link){
+  const canvas=getStoriesCanvas();
+  const nomeSet=id.toString().replace(/[^a-z0-9]/gi,'_').substring(0,20);
+
+  // Mobile: Web Share API
+  if(navigator.share && navigator.canShare){
+    try{
+      const blob=await new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(),'image/png'));
+      const file=new File([blob],`stories_${nomeSet}.png`,{type:'image/png'});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'Wonderblocks Stories'});
+        return;
+      }
+    }catch(e){if(e.name==='AbortError')return;}
+  }
+  // Desktop: download direto
+  const a=document.createElement('a');
+  a.download=`stories_${nomeSet}.png`;
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+  showToast('⬇ Stories salvo!','linear-gradient(135deg,#0f766e,#14b8a6)');
+}
+
+function copiarLink(link){
+  if(!link){showToast('Sem link cadastrado','#d29922');return;}
+  navigator.clipboard.writeText(link).then(()=>showToast('✓ Link copiado!','#2563eb'));
 }
 
 // ── GERADOR DE CUPONS ──
