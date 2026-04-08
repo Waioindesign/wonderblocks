@@ -2482,7 +2482,7 @@ function buildCupomWppText(){
   L.push('');
   if(link) L.push(`👉 ${link}`);
   L.push('');
-  L.push(rodapeMap[loja]||rodapeMap['Amazon']);
+  L.push('_⚠️ Cupons são por tempo limitado e podem esgotar a qualquer momento. Confira disponibilidade e preço antes de finalizar a compra._');
   return L.join('\n');
 }
 
@@ -2547,26 +2547,29 @@ async function gerarCupomCard(){
 
     const textColor=CUPOM_TEXT_COLOR[loja]||'#000000';
 
-    // ── ÁREA DO TICKET: X 280-860, Y 360-640, centro Y=500 ──
-    // Área útil para o texto (após a linha tracejada ~X=270)
-    const txtX=570;   // centro horizontal da área de texto
+    // ── ÁREA DO TICKET: X 105-860, Y 360-640, centro Y=500 ──
+    // Linha tracejada em X≈250. Texto começa em X=260+10px de margem = X=270
+    // Área útil: X 270-850 → largura máxima = 580px
+    const txtXStart=270;  // início do texto (10px após a linha tracejada)
+    const txtXEnd=850;    // fim do texto (10px antes da borda direita do ticket)
+    const txtMaxW=txtXEnd-txtXStart; // 580px disponíveis
+    const txtCenterX=(txtXStart+txtXEnd)/2; // centro da área = X=560
     const txtY=500;   // centro vertical do ticket
-    const txtMaxW=560; // largura máxima (860-280=580, deixar margem)
 
-    // 2. Nome do cupom — centralizado no espaço do ticket
+    // 2. Nome do cupom — alinhado ao centro da área disponível
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillStyle=textColor;
 
-    // Ajustar tamanho da fonte ao comprimento do nome
-    let fontSize=nome.length<=6?110:nome.length<=8?96:nome.length<=10?82:nome.length<=13?68:nome.length<=16?56:46;
+    // Começar com fonte grande e encolher até caber em txtMaxW (com margem de 10px em cada lado)
+    const maxFit=txtMaxW-20; // margem total de 20px
+    let fontSize=120;
     ctx.font=`900 ${fontSize}px "Arial Black", Arial, sans-serif`;
-    // Encolher se não couber
-    while(ctx.measureText(nome).width>txtMaxW-10 && fontSize>30){
-      fontSize-=4;
+    while(ctx.measureText(nome).width>maxFit && fontSize>28){
+      fontSize-=2;
       ctx.font=`900 ${fontSize}px "Arial Black", Arial, sans-serif`;
     }
-    ctx.fillText(nome, txtX, txtY);
+    ctx.fillText(nome, txtCenterX, txtY);
 
     // ── TEXTOS ABAIXO DO TICKET ──
     // Fundo é preto → texto branco
