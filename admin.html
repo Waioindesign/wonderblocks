@@ -2439,10 +2439,18 @@ function copiarWhatsApp(o){
 // ── STORIES ──
 const STORIES_FRAME = 'assets/frame_stories.png';
 
-// Canvas dedicado para Stories (1080x1920)
+// Canvas dedicado para Stories (1080x1920) — sempre limpo ao iniciar nova geração
 function getStoriesCanvas(){
   let c=document.getElementById('canvas-stories');
-  if(!c){c=document.createElement('canvas');c.id='canvas-stories';c.width=1080;c.height=1920;c.style.display='none';document.body.appendChild(c);}
+  if(!c){
+    c=document.createElement('canvas');
+    c.id='canvas-stories';
+    c.width=1080;c.height=1920;
+    c.style.display='none';
+    document.body.appendChild(c);
+  }
+  // Sempre resetar para evitar conteúdo residual de gerações anteriores
+  c.width=1080; c.height=1920;
   return c;
 }
 
@@ -2564,13 +2572,20 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
 }
 
 async function baixarStories(id, link){
-  const canvas=getStoriesCanvas();
+  const canvas=document.getElementById('canvas-stories');
+  if(!canvas){showToast('Gere o Stories primeiro','#d29922');return;}
+
+  // Criar cópia isolada para evitar contaminação no share
+  const copy=document.createElement('canvas');
+  copy.width=1080; copy.height=1920;
+  copy.getContext('2d').drawImage(canvas,0,0);
+
   const nomeSet=id.toString().replace(/[^a-z0-9]/gi,'_').substring(0,20);
 
   // Mobile: Web Share API
   if(navigator.share && navigator.canShare){
     try{
-      const blob=await new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(),'image/png'));
+      const blob=await new Promise((res,rej)=>copy.toBlob(b=>b?res(b):rej(new Error('toBlob falhou')),'image/png'));
       const file=new File([blob],`stories_${nomeSet}.png`,{type:'image/png'});
       if(navigator.canShare({files:[file]})){
         await navigator.share({files:[file],title:'Wonderblocks Stories'});
@@ -2581,7 +2596,7 @@ async function baixarStories(id, link){
   // Desktop: download direto
   const a=document.createElement('a');
   a.download=`stories_${nomeSet}.png`;
-  a.href=canvas.toDataURL('image/png');
+  a.href=copy.toDataURL('image/png');
   a.click();
   showToast('⬇ Stories salvo!','linear-gradient(135deg,#0f766e,#14b8a6)');
 }
