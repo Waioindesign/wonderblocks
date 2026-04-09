@@ -1008,7 +1008,7 @@ select.field-input option{background:var(--bg3);}
   </div>
 </div>
 
-<script>
+<script>/* v20260409120605 */
 const SUPA='https://rkqhjwskosftluxabsmt.supabase.co';
 const KEY='sb_publishable_DUHT5KHlSX4hv2_kXCBqAQ_lleuU7Au';
 const RB_KEY='0613166ec854588f7e2819ddccbeef51';
@@ -2439,18 +2439,18 @@ function copiarWhatsApp(o){
 // ── STORIES ──
 const STORIES_FRAME = 'assets/frame_stories.png';
 
-// Canvas dedicado para Stories (1080x1920) — sempre limpo ao iniciar nova geração
+// Canvas dedicado para Stories — sempre 1080x1920 físicos, independente de devicePixelRatio
 function getStoriesCanvas(){
   let c=document.getElementById('canvas-stories');
   if(!c){
     c=document.createElement('canvas');
     c.id='canvas-stories';
-    c.width=1080;c.height=1920;
     c.style.display='none';
     document.body.appendChild(c);
   }
-  // Sempre resetar para evitar conteúdo residual de gerações anteriores
-  c.width=1080; c.height=1920;
+  // Resetar para dimensões exatas — limpa conteúdo anterior
+  c.width=1080;
+  c.height=1920;
   return c;
 }
 
@@ -2575,10 +2575,12 @@ async function baixarStories(id, link){
   const canvas=document.getElementById('canvas-stories');
   if(!canvas){showToast('Gere o Stories primeiro','#d29922');return;}
 
-  // Criar cópia isolada para evitar contaminação no share
+  // Criar cópia com dimensões físicas fixas 1080x1920 (ignorar devicePixelRatio)
   const copy=document.createElement('canvas');
-  copy.width=1080; copy.height=1920;
-  copy.getContext('2d').drawImage(canvas,0,0);
+  copy.width=1080;
+  copy.height=1920;
+  const copyCtx=copy.getContext('2d');
+  copyCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 1080, 1920);
 
   const nomeSet=id.toString().replace(/[^a-z0-9]/gi,'_').substring(0,20);
 
