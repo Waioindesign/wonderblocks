@@ -2513,12 +2513,12 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
     ctx.fillStyle='#169CFF';
     ctx.font='600 30px Inter, Arial, sans-serif';
     const sw=ctx.measureText(poFmt).width;
-    ctx.fillText(poFmt, 540, 1112);
+    ctx.fillText(poFmt, 540, 1125);
     ctx.strokeStyle='#169CFF';
     ctx.lineWidth=2;
     ctx.beginPath();
-    ctx.moveTo(540-sw/2, 1112);
-    ctx.lineTo(540+sw/2, 1112);
+    ctx.moveTo(540-sw/2, 1125);
+    ctx.lineTo(540+sw/2, 1125);
     ctx.stroke();
     ctx.restore();
 
@@ -2535,7 +2535,7 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
       pfSize-=2;
       ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;
     }
-    ctx.fillText(pfFmt, 540, 1224);
+    ctx.fillText(pfFmt, 540, 1237);
     ctx.restore();
 
     // ── 7. PPP — box PRETO MENOR Y:1281-1375, centro Y=1328 ──
@@ -2546,7 +2546,7 @@ async function gerarStories(id, seloLabel, imgSrc, imgFb, precoOriginal, precoFi
     ctx.textBaseline='middle';
     ctx.fillStyle='#ffffff';
     ctx.font='bold 34px Inter, Arial, sans-serif';
-    ctx.fillText(`${pppEmoji} PPP: R$ ${fmt(ppp)}/peça`, 540, 1282);
+    ctx.fillText(`${pppEmoji} PPP: R$ ${fmt(ppp)}/peça`, 540, 1295);
     ctx.restore();
 
     // ── 8. Mostrar botões ──
