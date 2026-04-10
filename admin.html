@@ -1224,7 +1224,7 @@ select.field-input option{background:var(--bg3);}
   </div>
 </div>
 
-<script>/* v20260409120605 */
+<script>/* v20260410143000 */
 const SUPA='https://rkqhjwskosftluxabsmt.supabase.co';
 const KEY='sb_publishable_DUHT5KHlSX4hv2_kXCBqAQ_lleuU7Au';
 const RB_KEY='0613166ec854588f7e2819ddccbeef51';
@@ -3130,9 +3130,15 @@ const GEEK_POR_PAGINA=20;
 
 // ── Supabase helpers ──
 async function geekSupaFetch(path, opts={}){
-  const r=await fetch(SUPA+path,{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},...opts});
+  const defaultHeaders={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'};
+  const mergedOpts={...opts, headers:{...defaultHeaders,...(opts.headers||{})}};
+  const r=await fetch(SUPA+path, mergedOpts);
   if(!r.ok){const t=await r.text();throw new Error(t);}
-  return r.json();
+  // 204 No Content → retorna null (POST/PATCH/DELETE com return=minimal)
+  if(r.status===204||r.headers.get('content-length')==='0') return null;
+  const ct=r.headers.get('content-type')||'';
+  if(ct.includes('application/json')) return r.json();
+  return null;
 }
 
 // ── Carregar ofertas ──
@@ -3353,18 +3359,47 @@ async function geekBuscarProduto(){
       if(!asinMatch) throw new Error('Não consegui extrair o ASIN da URL. Tente colar a URL completa da página do produto.');
       const asin=asinMatch[1];
       let titulo='';
+      let imgProxy='';
       try{
         const r=await fetch(`https://wonderblocks-api.vercel.app/api/amazon?asin=${asin}`);
-        if(r.ok){const d=await r.json();titulo=d.title||d.ItemsResult?.Items?.[0]?.ItemInfo?.Title?.DisplayValue||'';}
-      }catch{}
+        if(r.ok){
+          const d=await r.json();
+          // Tentar vários formatos possíveis de resposta do proxy
+          titulo = d.title
+            || d.Title
+            || d.ItemsResult?.Items?.[0]?.ItemInfo?.Title?.DisplayValue
+            || d.items?.[0]?.ItemInfo?.Title?.DisplayValue
+            || d.item?.ItemInfo?.Title?.DisplayValue
+            || '';
+          imgProxy = d.image
+            || d.Image
+            || d.ItemsResult?.Items?.[0]?.Images?.Primary?.Large?.URL
+            || d.items?.[0]?.Images?.Primary?.Large?.URL
+            || '';
+          // Log para diagnóstico (remover depois)
+          console.log('[Amazon Proxy Response]', JSON.stringify(d).substring(0,300));
+        }
+      }catch(e2){
+        console.warn('[Amazon Proxy Error]', e2.message);
+      }
       if(titulo) document.getElementById('geek-nome').value=titulo;
+      if(imgProxy){
+        document.getElementById('geek-img-url').value=imgProxy;
+        document.getElementById('geek-img-preview').src=imgProxy;
+        document.getElementById('geek-img-preview-wrap').style.display='block';
+      }
       document.getElementById('geek-loja').value='Amazon';
-      document.getElementById('geek-auto-nome').textContent=titulo||'ASIN: '+asin+' (preencha o preço manualmente)';
+      document.getElementById('geek-auto-nome').textContent=titulo||(imgProxy?'Produto encontrado — verifique o título':'ASIN: '+asin+' — preencha título e preço manualmente');
       document.getElementById('geek-auto-loja').textContent='Amazon · '+asin;
-      document.getElementById('geek-auto-img').src='';
+      document.getElementById('geek-auto-img').src=imgProxy||'';
       document.getElementById('geek-auto-bar').style.display='flex';
-      status.textContent=titulo?'✓ Título carregado. Preencha o preço e a imagem manualmente (Amazon PA API ainda sem campo Offers).':'ASIN detectado: '+asin+'. Preencha os campos manualmente.';
-      status.style.color='var(--amber2)';
+      if(titulo){
+        status.textContent='✓ Título carregado. Preencha o preço manualmente (Amazon PA API ainda sem campo Offers).';
+        status.style.color='var(--amber2)';
+      } else {
+        status.textContent='⚠ ASIN detectado: '+asin+'. Proxy não retornou título — preencha os campos manualmente. (Verifique o console para diagnóstico)';
+        status.style.color='var(--amber2)';
+      }
     } else {
       throw new Error('URL não reconhecida. Aceito links do Mercado Livre ou Amazon.');
     }
