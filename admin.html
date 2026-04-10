@@ -1224,7 +1224,7 @@ select.field-input option{background:var(--bg3);}
   </div>
 </div>
 
-<script>/* v20260410143000 */
+<script>/* v20260410150000 */
 const SUPA='https://rkqhjwskosftluxabsmt.supabase.co';
 const KEY='sb_publishable_DUHT5KHlSX4hv2_kXCBqAQ_lleuU7Au';
 const RB_KEY='0613166ec854588f7e2819ddccbeef51';
@@ -3353,31 +3353,24 @@ async function geekBuscarProduto(){
       status.textContent='✓ Dados do Mercado Livre carregados automaticamente!';
       status.style.color='var(--green2)';
     } else if(isAmazon){
-      // Usar proxy Vercel existente (título disponível, preço manual)
+      // Usar proxy Vercel existente
       const cleanUrl=url.split('?')[0];
       const asinMatch=cleanUrl.match(/\/([A-Z0-9]{10})(?:[/?]|$)/);
       if(!asinMatch) throw new Error('Não consegui extrair o ASIN da URL. Tente colar a URL completa da página do produto.');
       const asin=asinMatch[1];
-      let titulo='';
-      let imgProxy='';
+      let titulo='', imgProxy='', features=[];
       try{
         const r=await fetch(`https://wonderblocks-api.vercel.app/api/amazon?asin=${asin}`);
         if(r.ok){
           const d=await r.json();
-          // Tentar vários formatos possíveis de resposta do proxy
-          titulo = d.title
-            || d.Title
-            || d.ItemsResult?.Items?.[0]?.ItemInfo?.Title?.DisplayValue
-            || d.items?.[0]?.ItemInfo?.Title?.DisplayValue
-            || d.item?.ItemInfo?.Title?.DisplayValue
-            || '';
-          imgProxy = d.image
-            || d.Image
-            || d.ItemsResult?.Items?.[0]?.Images?.Primary?.Large?.URL
-            || d.items?.[0]?.Images?.Primary?.Large?.URL
-            || '';
-          // Log para diagnóstico (remover depois)
-          console.log('[Amazon Proxy Response]', JSON.stringify(d).substring(0,300));
+          // Estrutura real: d.raw.ItemsResult.Items[0].ItemInfo.Title.DisplayValue
+          const item=d?.raw?.ItemsResult?.Items?.[0];
+          titulo = item?.ItemInfo?.Title?.DisplayValue
+            || d.title || d.Title || '';
+          features = item?.ItemInfo?.Features?.DisplayValues || [];
+          imgProxy = item?.Images?.Primary?.Large?.URL
+            || item?.Images?.Primary?.Medium?.URL
+            || d.image || '';
         }
       }catch(e2){
         console.warn('[Amazon Proxy Error]', e2.message);
@@ -3389,15 +3382,15 @@ async function geekBuscarProduto(){
         document.getElementById('geek-img-preview-wrap').style.display='block';
       }
       document.getElementById('geek-loja').value='Amazon';
-      document.getElementById('geek-auto-nome').textContent=titulo||(imgProxy?'Produto encontrado — verifique o título':'ASIN: '+asin+' — preencha título e preço manualmente');
-      document.getElementById('geek-auto-loja').textContent='Amazon · '+asin;
+      document.getElementById('geek-auto-nome').textContent=titulo||'ASIN: '+asin;
+      document.getElementById('geek-auto-loja').textContent='Amazon · '+asin+(features.length?' · '+features.length+' features':'');
       document.getElementById('geek-auto-img').src=imgProxy||'';
       document.getElementById('geek-auto-bar').style.display='flex';
       if(titulo){
-        status.textContent='✓ Título carregado. Preencha o preço manualmente (Amazon PA API ainda sem campo Offers).';
-        status.style.color='var(--amber2)';
+        status.textContent='✓ Título carregado da Amazon. Preencha o preço manualmente (PA API sem campo Offers por ora).';
+        status.style.color='var(--green2)';
       } else {
-        status.textContent='⚠ ASIN detectado: '+asin+'. Proxy não retornou título — preencha os campos manualmente. (Verifique o console para diagnóstico)';
+        status.textContent='⚠ ASIN detectado: '+asin+'. Proxy não retornou título — preencha os campos manualmente.';
         status.style.color='var(--amber2)';
       }
     } else {
@@ -3458,8 +3451,20 @@ async function salvarOfertaGeek(){
   if(!link){showToast('⚠ Preencha o link de afiliado','var(--amber)');return;}
   if(isNaN(pf)||pf<=0){showToast('⚠ Preencha o preço final','var(--amber)');return;}
 
+// ── Salvar ──
+async function salvarOfertaGeek(){
+  const nome=document.getElementById('geek-nome').value.trim();
+  const link=document.getElementById('geek-link').value.trim();
+  const precoFinalRaw=document.getElementById('geek-preco-final').value;
+  const pf=parsePreco(precoFinalRaw);
+
+  if(!nome){showToast('⚠ Preencha o nome do produto','var(--amber)');return;}
+  if(!link){showToast('⚠ Preencha o link de afiliado','var(--amber)');return;}
+  if(isNaN(pf)||pf<=0){showToast('⚠ Preencha o preço final','var(--amber)');return;}
+
   const btn=document.getElementById('geek-btn-save');
   btn.disabled=true;
+  btn.textContent='Salvando...';
 
   const payload={
     nome,
@@ -3488,28 +3493,265 @@ async function salvarOfertaGeek(){
         body:JSON.stringify({...payload,created_at:new Date().toISOString()})
       });
     }
-    document.getElementById('geek-panel-msg-ok').style.display='flex';
-    setTimeout(()=>document.getElementById('geek-panel-msg-ok').style.display='none',2500);
     showToast(geekEditandoId?'✓ Produto atualizado!':'✓ Produto salvo!','#238636');
     fecharGeekPainel();
-    geekCarregarOfertas();
+    await geekCarregarOfertas(); // aguarda reload antes de liberar
   }catch(e){
-    document.getElementById('geek-panel-msg-err').style.display='flex';
-    document.getElementById('geek-panel-msg-err').textContent='Erro: '+e.message;
-    setTimeout(()=>document.getElementById('geek-panel-msg-err').style.display='none',3000);
+    const errEl=document.getElementById('geek-panel-msg-err');
+    errEl.textContent='Erro: '+e.message;
+    errEl.style.display='flex';
+    setTimeout(()=>errEl.style.display='none',4000);
+    console.error('[salvarOfertaGeek]',e);
+  } finally {
+    btn.disabled=false;
+    btn.textContent='Salvar Produto Geek';
   }
-  btn.disabled=false;
 }
 
 // ── Excluir ──
 async function geekExcluirOferta(id,nome){
   if(!confirm(`Excluir "${nome}"?\nEsta ação não pode ser desfeita.`)) return;
   try{
-    await geekSupaFetch(`/rest/v1/ofertas_geek?id=eq.${id}`,{method:'DELETE'});
+    await geekSupaFetch(`/rest/v1/ofertas_geek?id=eq.${id}`,{
+      method:'DELETE',
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'}
+    });
     showToast('✓ Produto excluído','#238636');
     geekCarregarOfertas();
   }catch(e){
-    showToast('Erro ao excluir: '+e.message,'var(--red)');
+    showToast('Erro ao excluir: '+e.message,'var(--red2)');
+  }
+}
+
+// ── WhatsApp copy Geek ──
+function geekCopiarWhatsApp(o){
+  const po=Number(o.preco_original||0), pf=Number(o.preco_final||0);
+  const desc=po&&pf?Math.round((1-pf/po)*100):0;
+  const seloEmoji=(s)=>{const v=(s||'').toLowerCase();if(v.includes('muito'))return'🔵 MUITO BOM';if(v.includes('bom'))return'🟢 BOM';if(v.includes('média')||v.includes('media'))return'🟡 NA MÉDIA';return'🔴 RUIM';};
+  const rodapeMap={'Amazon':'_(Vendido e entregue pela Amazon)_','Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_','Mercado Livre':'_(Vendido e entregue pelo ML)_','Magalu':'_(Vendido e entregue pela Magalu)_','Ri Happy':'_(Vendido e entregue pela Ri Happy)_'};
+  const rodape=rodapeMap[o.loja]||'_(Confira o link)_';
+  const L=[];
+  // Frase abertura por categoria
+  const frasesCat={'Funko Pop':['🔵 FUNKO POP em PROMOÇÃO!','🎯 Funko Pop com preço BOM!','⭐ Esse Funko vale muito!'],'Board Game':['🎲 JOGO DE TABULEIRO em OFERTA!','🃏 Board Game com preço ótimo!','🎮 Esse jogo vale muito!'],'Action Figure':['🦸 ACTION FIGURE em promoção!','⚡ Esse action figure tá barato!','🎯 Figura de ação com preço bom!'],'Card Game':['🃏 CARD GAME em oferta!','⭐ Jogo de cartas com preço ótimo!'],'RPG':['🎲 RPG em PROMOÇÃO!','⚔️ Esse RPG tá com preço bom!'],'Mangá':['📚 MANGÁ em promoção!','📖 Esse mangá tá barato!']};
+  const frasesArr=frasesCat[o.categoria]||['🔥 OFERTA GEEK!','⭐ Produto GEEK em promoção!'];
+  L.push(frasesArr[Math.floor(Math.random()*frasesArr.length)]);
+  if(o.cupom) L.push(`🎟️ CUPOM: *${o.cupom}*${o.cupom_obs?' '+o.cupom_obs:''}`);
+  if(o.link) L.push(`👉 ${o.link}`);
+  L.push('');
+  L.push(`🏷️ *${o.nome||''}*`);
+  L.push(`📦 Categoria: ${o.categoria||''}`);
+  if(desc>0) L.push(`💥 ${desc}% OFF`);
+  if(po) L.push(`💸 De: R$${fmt(po)}`);
+  L.push(`🔥 Por: R$${fmt(pf)}`);
+  if(o.obs) L.push(`ℹ️ ${o.obs}`);
+  L.push(seloEmoji(o.selo));
+  L.push('');
+  L.push(rodape);
+  navigator.clipboard.writeText(L.join('\n')).then(()=>showToast('✓ Texto copiado!','#238636'));
+}
+
+// ── Card Stories Geek (1080x1920, reutiliza frame_stories.png) ──
+let geekExpandedId=null;
+
+function geekToggleExpand(id){
+  geekExpandedId=geekExpandedId===id?null:id;
+  geekRenderTabela();
+}
+
+// Override geekRenderTabela para incluir expand row
+function geekRenderTabela(){
+  const q=(document.getElementById('geek-search')?.value||'').toLowerCase();
+  let lista=geekTodasOfertas.filter(o=>{
+    const catOk=geekFiltroCategoria==='todas'||o.categoria===geekFiltroCategoria;
+    const qOk=!q||o.nome?.toLowerCase().includes(q)||o.categoria?.toLowerCase().includes(q);
+    return catOk&&qOk;
+  });
+  const total=lista.length;
+  const inicio=(geekPaginaAtual-1)*GEEK_POR_PAGINA;
+  const pagina=lista.slice(inicio,inicio+GEEK_POR_PAGINA);
+  const body=document.getElementById('geek-table-body');
+  if(!pagina.length){
+    body.innerHTML='<tr><td colspan="7" class="empty-state"><div class="empty-icon">🎲</div>Nenhum produto encontrado.</td></tr>';
+  } else {
+    body.innerHTML=pagina.map(o=>{
+      const img=o.img_url?`<img src="${o.img_url}" style="width:36px;height:36px;object-fit:contain;background:#fff;border-radius:4px;padding:2px;">`:'<div style="width:36px;height:36px;background:var(--bg3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;">🎲</div>';
+      const desc=o.preco_original&&o.preco_final?`<span style="font-size:11px;color:var(--text3);">De R$ ${fmt(o.preco_original)}</span><br>`:'';
+      const seloMap={'MUITO BOM':'b-mb','BOM':'b-bom','NA MÉDIA':'b-med','RUIM':'b-ruim'};
+      const seloClass=seloMap[o.selo]||'b-med';
+      const descPct=o.preco_original&&o.preco_final?Math.round((1-o.preco_final/o.preco_original)*100):0;
+      const isExpanded=geekExpandedId===o.id;
+      const safeO=JSON.stringify(o).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const mainRow=`<tr class="${isExpanded?'expanded':''}">
+        <td style="cursor:pointer;" onclick="geekToggleExpand('${o.id}')">${img}</td>
+        <td>
+          <div style="font-size:13px;font-weight:600;color:var(--text);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" onclick="geekToggleExpand('${o.id}')">${o.nome||'—'}</div>
+          ${o.cupom?`<span style="font-size:11px;color:var(--amber2);">🏷️ ${o.cupom}</span>`:''}
+        </td>
+        <td><span class="geek-tag">${o.categoria||'—'}</span></td>
+        <td style="font-size:12px;color:var(--text2);">${o.loja||'—'}</td>
+        <td class="price-cell">
+          ${desc}
+          <span class="final">R$ ${o.preco_final?fmt(o.preco_final):'—'}</span>
+          ${descPct>0?`<span style="font-size:11px;color:var(--green2);margin-left:4px;">-${descPct}%</span>`:''}
+        </td>
+        <td><span class="badge-selo ${seloClass}"><span class="badge-dot"></span>${o.selo||'—'}</span></td>
+        <td>
+          <div class="action-btns">
+            <button class="btn-icon edit" title="Editar" onclick="geekEditarOferta('${o.id}')">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-9 9H2v-3L11 2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="btn-icon del" title="Excluir" onclick="geekExcluirOferta('${o.id}','${(o.nome||'').replace(/'/g,'')}')">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M6 5V3h4v2M6 8v4M10 8v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+      const expandRow=isExpanded?`<tr class="expand-row">
+        <td colspan="7">
+          <div class="expand-inner">
+            <div class="expand-preview" id="geek-prev-${o.id}">
+              ${o.img_url?`<img src="${o.img_url}" alt="">`:'<div class="expand-preview-ph">Sem imagem</div>'}
+            </div>
+            <div class="expand-actions">
+              <div class="expand-title">Gerar Conteúdo</div>
+              <button class="btn-publish-action btn-gen-card" id="geek-btn-stories-${o.id}" onclick="geekGerarStories('${o.id}')">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                Gerar Stories
+              </button>
+              <button class="btn-publish-action" id="geek-btn-dl-${o.id}" onclick="geekBaixarStories('${o.id}')" style="display:none;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:#fff;">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 14h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                Baixar Stories
+              </button>
+              <button class="btn-publish-action btn-copy-wpp" onclick='geekCopiarWhatsApp(${JSON.stringify(o).replace(/'/g,"&#39;")})'>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.13 1 1 4.13 1 8c0 1.5.42 2.9 1.14 4.09L1 15l3-1.09A7 7 0 108 1z" stroke="currentColor" stroke-width="1.3"/></svg>
+                Copiar texto WhatsApp
+              </button>
+              <div class="expand-status" id="geek-status-${o.id}"></div>
+            </div>
+          </div>
+        </td>
+      </tr>`:'';
+      return mainRow+expandRow;
+    }).join('');
+  }
+  document.getElementById('geek-footer-info').textContent=`${total} produto${total!==1?'s':''}`;
+  geekRenderPaginacao(total);
+}
+
+async function geekGerarStories(id){
+  const o=geekTodasOfertas.find(x=>x.id===id);
+  if(!o) return;
+  const btn=document.getElementById(`geek-btn-stories-${id}`);
+  const status=document.getElementById(`geek-status-${id}`);
+  if(btn){btn.disabled=true;btn.childNodes[btn.childNodes.length-1].textContent=' Gerando...';}
+
+  try{
+    const canvas=getStoriesCanvas();
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,1080,1920);
+
+    // 1. Fundo branco
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,1080,1920);
+
+    // 2. Imagem do produto
+    const prodX=150, prodY=409, prodW=779, prodH=655;
+    if(o.img_url){
+      try{
+        const prodImg=await loadImg(o.img_url);
+        const scale=Math.min(640/prodImg.naturalWidth, prodH/prodImg.naturalHeight);
+        const dw=Math.round(prodImg.naturalWidth*scale);
+        const dh=Math.round(prodImg.naturalHeight*scale);
+        ctx.drawImage(prodImg, prodX+Math.round((prodW-dw)/2), prodY+Math.round((prodH-dh)/2), dw, dh);
+      }catch{}
+    }
+
+    // 3. Frame por cima
+    try{
+      const frame=await loadImg(STORIES_FRAME);
+      ctx.drawImage(frame,0,0,1080,1920);
+    }catch{}
+
+    // 4. Selo PPP (canto superior esquerdo — mesmo posicionamento do LEGO)
+    const seloMap2={'MUITO BOM':'assets/muito_bom.png','BOM':'assets/bom.png','NA MÉDIA':'assets/na_media.png','RUIM':'assets/ruim.png'};
+    const seloFile=seloMap2[o.selo]||SELOS_CARD[o.selo]||'assets/bom.png';
+    try{
+      const seloImg=await loadImg(seloFile);
+      ctx.drawImage(seloImg, 46, 221, 299, 299);
+    }catch{}
+
+    // 5. Preço "De:" riscado
+    if(o.preco_original){
+      const poFmt='De: R$'+fmt(o.preco_original);
+      ctx.save();
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='#169CFF';
+      ctx.font='600 30px Inter, Arial, sans-serif';
+      const sw=ctx.measureText(poFmt).width;
+      ctx.fillText(poFmt, 540, 1226);
+      ctx.strokeStyle='#169CFF'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(540-sw/2,1226); ctx.lineTo(540+sw/2,1226); ctx.stroke();
+      ctx.restore();
+    }
+
+    // 6. Preço final
+    const pfFmt='R$'+fmt(o.preco_final);
+    ctx.save();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#ffffff';
+    let pfSize=60;
+    ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;
+    while(ctx.measureText(pfFmt).width>680&&pfSize>32){pfSize-=2;ctx.font=`900 ${pfSize}px Inter, Arial Black, sans-serif`;}
+    ctx.fillText(pfFmt, 540, 1315);
+    ctx.restore();
+
+    // 7. Categoria + desconto no lugar do PPP
+    const desc=o.preco_original&&o.preco_final?Math.round((1-o.preco_final/o.preco_original)*100):0;
+    const catLine=`${o.categoria||'Geek'}${desc>0?' · -'+desc+'%':''}`;
+    ctx.save();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#ffffff';
+    ctx.font='bold 26px Inter, Arial, sans-serif';
+    ctx.fillText(catLine, 540, 1409);
+    ctx.restore();
+
+    // 8. Preview inline
+    const prev=document.getElementById(`geek-prev-${id}`);
+    if(prev){
+      const pc=document.createElement('canvas');
+      pc.width=1080; pc.height=1920;
+      pc.getContext('2d').drawImage(canvas,0,0);
+      pc.style.cssText='width:100%;height:100%;display:block;border-radius:var(--radius-lg);';
+      prev.innerHTML=''; prev.appendChild(pc);
+    }
+
+    const dlBtn=document.getElementById(`geek-btn-dl-${id}`);
+    if(dlBtn) dlBtn.style.display='flex';
+    if(status){status.textContent='✓ Stories pronto!';status.style.color='var(--green2)';status.style.display='block';}
+
+  }catch(e){
+    if(status){status.textContent='Erro: '+e.message;status.style.color='var(--red2)';status.style.display='block';}
+  }
+  if(btn){btn.disabled=false;btn.childNodes[btn.childNodes.length-1].textContent=' Gerar Stories';}
+}
+
+async function geekBaixarStories(id){
+  const canvas=document.getElementById('canvas-stories');
+  if(!canvas) return;
+  const o=geekTodasOfertas.find(x=>x.id===id);
+  const nome=(o?.nome||'geek').replace(/[^a-z0-9]/gi,'-').toLowerCase().substring(0,30);
+  try{
+    await new Promise((res,rej)=>{canvas.toBlob(async blob=>{
+      try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);res();}
+      catch(e){rej(e);}
+    },'image/png');});
+    showToast('✓ Imagem copiada!','linear-gradient(135deg,#6e40c9,#a371f7)');
+  }catch{
+    const link=document.createElement('a');
+    link.download=`wonderblocks-geek-${nome}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    showToast('⬇ Imagem salva!','linear-gradient(135deg,#1d4ed8,#0ea5e9)');
   }
 }
 
