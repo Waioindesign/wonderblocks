@@ -3133,13 +3133,13 @@ let todosGeek=[], geekFiltroCategoria='todos', geekPagina=1, geekEditandoId=null
 
 async function carregarGeek(){
   try{
-    const data=await apiGet('geek_produtos','?order=created_at.desc&limit=200');
+    const data=await apiGet('ofertas_geek','?order=created_at.desc&limit=200');
     todosGeek=data||[];
     atualizarBadgeGeek();
     renderTabelaGeek();
   }catch(e){
     todosGeek=[];
-    document.getElementById('tabela-geek-body').innerHTML=`<tr><td colspan="9" class="empty-state">Erro ao carregar. Verifique se a tabela <strong>geek_produtos</strong> existe no Supabase.</td></tr>`;
+    document.getElementById('tabela-geek-body').innerHTML=`<tr><td colspan="9" class="empty-state">Erro ao carregar. Verifique se a tabela <strong>ofertas_geek</strong> existe no Supabase.</td></tr>`;
   }
 }
 
@@ -3170,8 +3170,8 @@ function renderTabelaGeek(){
     const label=cat==='todos'?'Todos':(GEEK_CATEGORIAS[cat]||cat);
     btn.textContent=`${label} (${count})`;
   });
-  if(sort==='desconto_desc') lista.sort((a,b)=>(b.desconto_pct||0)-(a.desconto_pct||0));
-  else if(sort==='desconto_asc') lista.sort((a,b)=>(a.desconto_pct||0)-(b.desconto_pct||0));
+  if(sort==='desconto_desc') lista.sort((a,b)=>((b.preco_original&&b.preco_final?(b.preco_original-b.preco_final)/b.preco_original:0))- ((a.preco_original&&a.preco_final?(a.preco_original-a.preco_final)/a.preco_original:0)));
+  else if(sort==='desconto_asc') lista.sort((a,b)=>((a.preco_original&&a.preco_final?(a.preco_original-a.preco_final)/a.preco_original:0))- ((b.preco_original&&b.preco_final?(b.preco_original-b.preco_final)/b.preco_original:0)));
   else if(sort==='preco_asc') lista.sort((a,b)=>(a.preco_final||0)-(b.preco_final||0));
   else if(sort==='preco_desc') lista.sort((a,b)=>(b.preco_final||0)-(a.preco_final||0));
   const PER=20,total=lista.length,totalPages=Math.max(1,Math.ceil(total/PER));
@@ -3181,9 +3181,9 @@ function renderTabelaGeek(){
   const tbody=document.getElementById('tabela-geek-body');
   if(!page.length){tbody.innerHTML=`<tr><td colspan="9" class="empty-state"><div class="empty-icon">🎮</div>Nenhum produto encontrado</td></tr>`;return;}
   tbody.innerHTML=page.map(p=>{
-    const desc=p.desconto_pct?Math.round(p.desconto_pct):0;
+    const desc=((p.preco_original&&p.preco_final)?Math.round(((p.preco_original-p.preco_final)/p.preco_original)*100):0)?Math.round(p.desconto_pct):0;
     const catLabel=GEEK_CATEGORIAS[p.categoria]||p.categoria||'—';
-    const imgSrc=p.imagem_url||'';
+    const imgSrc=p.img_url||'';
     return`<tr>
       <td></td>
       <td><div class="set-cell">
@@ -3400,11 +3400,11 @@ async function salvarProdutoGeek(){
   const po=parsePreco(document.getElementById('gp-po').value);
   const pf=parsePreco(document.getElementById('gp-pf').value);
   const desc=(po&&pf&&!isNaN(po)&&!isNaN(pf)&&po>0)?Math.round(((po-pf)/po)*100):null;
-  const payload={nome,categoria:document.getElementById('gp-categoria').value,loja:document.getElementById('gp-loja').value,imagem_url:document.getElementById('gp-img').value.trim()||null,preco_original:po&&!isNaN(po)?Math.round(po*100)/100:null,preco_final:pf&&!isNaN(pf)?Math.round(pf*100)/100:null,desconto_pct:desc,cupom:document.getElementById('gp-cupom').value.trim().toUpperCase()||null,cupom_obs:document.getElementById('gp-cupom-obs').value.trim()||null,link:document.getElementById('gp-link').value.trim()||null,pausado:false};
+  const payload={nome,categoria:document.getElementById("gp-categoria").value,loja:document.getElementById("gp-loja").value,img_url:document.getElementById("gp-img").value.trim()||null,preco_original:po&&!isNaN(po)?Math.round(po*100)/100:null,preco_final:pf&&!isNaN(pf)?Math.round(pf*100)/100:null,cupom:document.getElementById("gp-cupom").value.trim().toUpperCase()||null,cupom_obs:document.getElementById("gp-cupom-obs").value.trim()||null,link:document.getElementById("gp-link").value.trim()||null,updated_at:new Date().toISOString()};
   const btn=document.getElementById('gp-btn-save');btn.disabled=true;btn.textContent='Salvando...';
   try{
-    if(geekEditandoId) await fetch(`${SUPA}/rest/v1/geek_produtos?id=eq.${geekEditandoId}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
-    else await fetch(`${SUPA}/rest/v1/geek_produtos`,{method:'POST',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
+    if(geekEditandoId) await fetch(`${SUPA}/rest/v1/ofertas_geek?id=eq.${geekEditandoId}`,{method:'PATCH',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
+    else await fetch(`${SUPA}/rest/v1/ofertas_geek`,{method:'POST',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
     showToast(geekEditandoId?'✓ Produto atualizado!':'✓ Produto adicionado!','#238636');
     fecharPainelGeek();await carregarGeek();
   }catch(e){showToast('Erro: '+e.message,'#da3633');}
@@ -3415,7 +3415,7 @@ function editarGeek(p){
   geekEditandoId=p.id;
   document.getElementById('gp-edit-id').value=p.id;
   document.getElementById('gp-nome').value=p.nome||'';
-  document.getElementById('gp-img').value=p.imagem_url||'';
+  document.getElementById('gp-img').value=p.img_url||'';
   document.getElementById('gp-po').value=p.preco_original||'';
   document.getElementById('gp-pf').value=p.preco_final||'';
   document.getElementById('gp-cupom').value=p.cupom||'';
@@ -3423,14 +3423,14 @@ function editarGeek(p){
   document.getElementById('gp-link').value=p.link||'';
   document.getElementById('gp-categoria').value=p.categoria||'outros';
   document.getElementById('gp-loja').value=p.loja||'Amazon';
-  if(p.imagem_url)geekPreviewImg();
+  if(p.img_url)geekPreviewImg();
   calcGeekDesc();atualizarWppGeek();
   abrirPainelGeek('Editar Produto Geek');
 }
 
 async function deletarGeek(id){
   if(!confirm('Remover este produto Geek?'))return;
-  try{await fetch(`${SUPA}/rest/v1/geek_produtos?id=eq.${id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});showToast('Produto removido','#da3633');await carregarGeek();}
+  try{await fetch(`${SUPA}/rest/v1/ofertas_geek?id=eq.${id}`,{method:'DELETE',headers:{'apikey':KEY,'Authorization':`Bearer ${KEY}`}});showToast('Produto removido','#da3633');await carregarGeek();}
   catch(e){showToast('Erro ao remover','#da3633');}
 }
 
