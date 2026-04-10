@@ -3436,17 +3436,16 @@ async function _geekGerarCanvas(imgUrl, po, pf){
   var ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,1000,1000);
 
-  // Fundo branco limpo
+  // ── 1. Fundo branco ──
   ctx.fillStyle='#ffffff';
   ctx.fillRect(0,0,1000,1000);
 
-  // Imagem do produto — centralizada, max 800x800, proporcional
+  // ── 2. Imagem do produto — centralizada, max 800x800 ──
   if(imgUrl){
     try{
       var prodImg=await loadImg(imgUrl);
       var maxW=800, maxH=800;
-      var w=prodImg.naturalWidth, h=prodImg.naturalHeight;
-      if(w===0||h===0){w=800;h=800;}
+      var w=prodImg.naturalWidth||800, h=prodImg.naturalHeight||800;
       var scale=Math.min(maxW/w, maxH/h, 1);
       var dw=Math.round(w*scale), dh=Math.round(h*scale);
       var dx=Math.round((1000-dw)/2), dy=Math.round((1000-dh)/2);
@@ -3454,23 +3453,62 @@ async function _geekGerarCanvas(imgUrl, po, pf){
     }catch(e){console.warn('Imagem nao carregada:',e.message);}
   }
 
-  // Badge de desconto — canto superior direito, se houver desconto
-  if(po&&pf&&!isNaN(po)&&!isNaN(pf)&&po>pf){
-    var desc=Math.round((1-pf/po)*100);
+  // ── 3. Stroke interno com gradiente #14FFEF → #6020AA (22px) ──
+  var strokeW=22;
+  var grad=ctx.createLinearGradient(500, 0, 500, 1000); // top → bottom
+  grad.addColorStop(0, '#14FFEF');
+  grad.addColorStop(1, '#6020AA');
+  ctx.strokeStyle=grad;
+  ctx.lineWidth=strokeW*2; // strokeRect desenha metade para fora, metade para dentro
+  ctx.strokeRect(0, 0, 1000, 1000);
+  // Clipar para garantir que só fique o stroke interno
+  ctx.save();
+  ctx.globalCompositeOperation='destination-over';
+  ctx.restore();
+  // Desenhar stroke só na borda interna
+  ctx.save();
+  ctx.strokeStyle=grad;
+  ctx.lineWidth=strokeW;
+  ctx.strokeRect(strokeW/2, strokeW/2, 1000-strokeW, 1000-strokeW);
+  ctx.restore();
+
+  // ── 4. Badge de desconto — canto superior direito ──
+  var po2=Number(po||0), pf2=Number(pf||0);
+  if(po2>0 && pf2>0 && po2>pf2){
+    var desc=Math.round((1-pf2/po2)*100);
     if(desc>0){
-      var bx=1000-40-110, by=40;
-      ctx.fillStyle='rgba(220,38,38,0.92)';
+      var bSize=128, bMargin=28;
+      var bx=1000-bMargin-bSize, by=bMargin;
+      var br=12; // border-radius
+
+      // Fundo do badge — gradiente igual ao stroke
+      var badgeGrad=ctx.createLinearGradient(bx, by, bx, by+bSize);
+      badgeGrad.addColorStop(0, '#14FFEF');
+      badgeGrad.addColorStop(1, '#6020AA');
+
+      ctx.save();
       ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(bx,by,110,110,55);
-      else ctx.arc(bx+55,by+55,55,0,Math.PI*2);
+      ctx.roundRect(bx, by, bSize, bSize, br);
+      ctx.fillStyle=badgeGrad;
       ctx.fill();
-      ctx.fillStyle='#fff';
+      ctx.restore();
+
+      // Texto do desconto
+      ctx.save();
       ctx.textAlign='center';
       ctx.textBaseline='middle';
-      ctx.font='900 34px Arial Black,Arial,sans-serif';
-      ctx.fillText(desc+'%', bx+55, by+40);
-      ctx.font='700 20px Arial,sans-serif';
-      ctx.fillText('OFF', bx+55, by+72);
+
+      // Número %
+      ctx.fillStyle='#ffffff';
+      ctx.font='900 46px Arial Black, Arial, sans-serif';
+      ctx.fillText('-'+desc+'%', bx+bSize/2, by+bSize/2-8);
+
+      // "OFF"
+      ctx.fillStyle='rgba(255,255,255,0.85)';
+      ctx.font='700 20px Arial, sans-serif';
+      ctx.letterSpacing='2px';
+      ctx.fillText('OFF', bx+bSize/2, by+bSize/2+30);
+      ctx.restore();
     }
   }
 
@@ -3552,24 +3590,42 @@ async function geekCopiarCardTabela(){
 function _geekBuildWpp(o){
   var po=Number(o.preco_original||0), pf=Number(o.preco_final||0);
   var desc=po&&pf?Math.round((1-pf/po)*100):0;
-  var seloEmoji=function(s){var v=(s||'').toLowerCase();if(v.includes('muito'))return'&#128309; MUITO BOM';if(v.includes('bom'))return'&#128994; BOM';if(v.includes('dia'))return'&#128993; NA MEDIA';return'&#128308; RUIM';};
-  var rodapeMap={'Amazon':'_(Vendido e entregue pela Amazon)_','Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_','Mercado Livre':'_(Vendido e entregue pelo ML)_','Magalu':'_(Vendido e entregue pela Magalu)_','Ri Happy':'_(Vendido e entregue pela Ri Happy)_'};
-  var frasesCat={'Funko Pop':['&#128309; FUNKO POP em PROMOCAO!','&#127919; Funko Pop com preco BOM!'],'Board Game':['&#127922; JOGO em OFERTA!','&#127921; Board Game com preco otimo!'],'Action Figure':['&#129304; ACTION FIGURE em promocao!','&#9889; Figura de acao com preco bom!'],'Card Game':['&#127921; CARD GAME em oferta!'],'RPG':['&#127922; RPG em PROMOCAO!'],'Manga':['&#128218; MANGA em promocao!']};
-  var fArr=frasesCat[o.categoria]||['&#128293; OFERTA GEEK!'];
+  var rodapeMap={
+    'Amazon':'_(Vendido e entregue pela Amazon)_',
+    'Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_',
+    'Mercado Livre':'_(Vendido e entregue pelo ML)_',
+    'Magalu':'_(Vendido e entregue pela Magalu)_',
+    'Ri Happy':'_(Vendido e entregue pela Ri Happy)_'
+  };
+  var aviso='_⚠️ Cupons são por tempo limitado e podem esgotar a qualquer momento. Confira disponibilidade e preço antes de finalizar a compra._';
   var L=[];
-  L.push(fArr[Math.floor(Math.random()*fArr.length)]);
-  if(o.cupom) L.push('&#127903;&#65039; CUPOM: *'+o.cupom+'*'+(o.cupom_obs?' '+o.cupom_obs:''));
-  if(o.link) L.push('&#128073; '+o.link);
+
+  // Nome em destaque
+  L.push('📦 '+(o.nome||''));
+
+  // Desconto
+  if(desc>0) L.push('🏷️ '+desc+'% OFF');
+
+  // Link
+  if(o.link) L.push('👉 '+o.link);
+
   L.push('');
-  L.push('&#127991;&#65039; *'+(o.nome||'')+'*');
-  L.push('&#128230; Categoria: '+(o.categoria||''));
-  if(desc>0) L.push('&#128165; '+desc+'% OFF');
-  if(po) L.push('&#128184; De: R$'+fmt(po));
-  L.push('&#128293; Por: R$'+fmt(pf));
-  if(o.obs) L.push('&#8505;&#65039; '+o.obs);
-  L.push(seloEmoji(o.selo));
+
+  // Cupom
+  if(o.cupom) L.push('🎫️ USE O CUPOM: *'+o.cupom+'*');
+
+  // Preços com tachado e negrito
+  if(po) L.push('💸 De: ~~R$'+fmt(po)+'~~');
+  if(pf) L.push('🔥 Por: *R$'+fmt(pf)+'*');
+
   L.push('');
+
+  // Rodapé loja
   L.push(rodapeMap[o.loja]||'_(Confira o link)_');
+
+  L.push('');
+  L.push(aviso);
+
   return L.join('\n');
 }
 
@@ -3692,6 +3748,49 @@ function copiarCupomWpp(){
   const texto=buildCupomWppText();
   navigator.clipboard.writeText(texto).then(()=>showToast('✓ Texto copiado!','#238636'));
 }
+
+// ── LISTENER DA EXTENSÃO WONDERBLOCKS CAPTURE ──
+window.addEventListener('wb-geek-dados', function(e) {
+  var d = e.detail;
+  if (!d) return;
+
+  // Abrir o painel Geek se não estiver aberto
+  if (!document.getElementById('geek-slide-panel').classList.contains('open')) {
+    showPage('geek');
+    setTimeout(function() { abrirGeekPainel('Nova Oferta Geek'); }, 100);
+  } else {
+    abrirGeekPainel('Nova Oferta Geek');
+  }
+
+  // Preencher campos após painel abrir
+  setTimeout(function() {
+    if (d.nome)           document.getElementById('geek-nome').value = d.nome;
+    if (d.loja)           document.getElementById('geek-loja').value = d.loja;
+    if (d.preco_original) document.getElementById('geek-preco-original').value = d.preco_original;
+    if (d.preco_final)    document.getElementById('geek-preco-final').value = d.preco_final;
+    if (d.img_url) {
+      document.getElementById('geek-img-url').value = d.img_url;
+      document.getElementById('geek-img-preview').src = d.img_url;
+      document.getElementById('geek-img-preview-wrap').style.display = 'block';
+    }
+    if (d.link) document.getElementById('geek-link').value = d.link;
+
+    // Auto-detectar categoria pelo nome
+    var nome = (d.nome || '').toLowerCase();
+    var cat = document.getElementById('geek-categoria');
+    if (cat) {
+      if (nome.includes('funko')) cat.value = 'Funko Pop';
+      else if (nome.includes('action figure') || nome.includes('figura')) cat.value = 'Action Figure';
+      else if (nome.includes('board game') || nome.includes('jogo')) cat.value = 'Board Game';
+      else if (nome.includes('card game') || nome.includes('cartas')) cat.value = 'Card Game';
+      else if (nome.includes('rpg') || nome.includes('dungeons')) cat.value = 'RPG';
+      else if (nome.includes('manga') || nome.includes('mangá') || nome.includes('volume')) cat.value = 'Manga';
+    }
+
+    geekAtualizarDesconto();
+    showToast('✓ Dados capturados pela extensão!', 'linear-gradient(135deg,#6e40c9,#a371f7)');
+  }, 200);
+});
 </script>
 </body>
 </html>
