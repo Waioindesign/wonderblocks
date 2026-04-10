@@ -3284,12 +3284,21 @@ async function geekBuscarProduto(){
 function mostrarResultadosGeek(items){
   const wrap=document.getElementById('geek-busca-resultados');
   const lista=document.getElementById('geek-resultados-lista');
-  lista.innerHTML=items.map((item,i)=>`
-    <div onclick="selecionarProdutoGeek(${i})" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;transition:border-color .12s;" onmouseover="this.style.borderColor='var(--blue2)'" onmouseout="this.style.borderColor='var(--border2)'">
-      ${item.imagem?`<img src="${item.imagem}" alt="" style="width:48px;height:48px;object-fit:contain;border-radius:6px;background:#fff;padding:2px;flex-shrink:0;">`:'<div style="width:48px;height:48px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎮</div>'}
-      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.nome||'—'}</div><div style="font-size:11px;color:var(--text3);">${item.sub||item.descricao||(item.preco?`R$ ${parseFloat(item.preco).toFixed(2).replace('.',',')}':'')}${item.fallback?' (sugestão IA)':''}</div></div>
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="color:var(--text3);flex-shrink:0;"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-    </div>`).join('');
+  let html='';
+  items.forEach(function(item,i){
+    const imgHtml=item.imagem
+      ?'<img src="'+item.imagem+'" alt="" style="width:48px;height:48px;object-fit:contain;border-radius:6px;background:#fff;padding:2px;flex-shrink:0;">'
+      :'<div style="width:48px;height:48px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎮</div>';
+    const precoStr=item.preco?'R$ '+parseFloat(item.preco).toFixed(2).replace('.',','):'';
+    const sub=(item.sub||item.descricao||precoStr)+(item.fallback?' (sugestao IA)':'');
+    html+='<div onclick="selecionarProdutoGeek('+i+')" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;">'
+      +imgHtml
+      +'<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);">'+(item.nome||'---')+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);">'+sub+'</div></div>'
+      +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
+      +'</div>';
+  });
+  lista.innerHTML=html;
   wrap._items=items;wrap.style.display='block';
 }
 
