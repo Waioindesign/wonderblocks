@@ -3472,42 +3472,26 @@ async function _geekGerarCanvas(imgUrl, po, pf){
   ctx.strokeRect(strokeW/2, strokeW/2, 1000-strokeW, 1000-strokeW);
   ctx.restore();
 
-  // ── 4. Badge de desconto — canto superior direito ──
+  // ── 4. Badge de desconto — horizontal, simples, vermelho ──
   var po2=Number(po||0), pf2=Number(pf||0);
   if(po2>0 && pf2>0 && po2>pf2){
     var desc=Math.round((1-pf2/po2)*100);
     if(desc>0){
-      var bSize=128, bMargin=28;
-      var bx=1000-bMargin-bSize, by=bMargin;
-      var br=12; // border-radius
-
-      // Fundo do badge — gradiente igual ao stroke
-      var badgeGrad=ctx.createLinearGradient(bx, by, bx, by+bSize);
-      badgeGrad.addColorStop(0, '#14FFEF');
-      badgeGrad.addColorStop(1, '#6020AA');
-
+      var label='-'+desc+'%';
+      var bMargin=30, bH=66, bR=12, bPadX=28;
       ctx.save();
+      ctx.font='900 40px Arial Black, Arial, sans-serif';
+      var textW=ctx.measureText(label).width;
+      var bW=Math.round(textW+bPadX*2);
+      var bx=1000-bMargin-bW, by=bMargin;
       ctx.beginPath();
-      ctx.roundRect(bx, by, bSize, bSize, br);
-      ctx.fillStyle=badgeGrad;
+      ctx.roundRect(bx, by, bW, bH, bR);
+      ctx.fillStyle='#FF2A2A';
       ctx.fill();
-      ctx.restore();
-
-      // Texto do desconto
-      ctx.save();
+      ctx.fillStyle='#ffffff';
       ctx.textAlign='center';
       ctx.textBaseline='middle';
-
-      // Número %
-      ctx.fillStyle='#ffffff';
-      ctx.font='900 46px Arial Black, Arial, sans-serif';
-      ctx.fillText('-'+desc+'%', bx+bSize/2, by+bSize/2-8);
-
-      // "OFF"
-      ctx.fillStyle='rgba(255,255,255,0.85)';
-      ctx.font='700 20px Arial, sans-serif';
-      ctx.letterSpacing='2px';
-      ctx.fillText('OFF', bx+bSize/2, by+bSize/2+30);
+      ctx.fillText(label, bx+bW/2, by+bH/2);
       ctx.restore();
     }
   }
