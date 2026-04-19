@@ -3707,40 +3707,29 @@ function copiarCupomWpp(){
   const texto=buildCupomWppText();
   navigator.clipboard.writeText(texto).then(()=>showToast('✓ Texto copiado!','#238636'));
 }
-</script>
 
 // ── LISTENER DA EXTENSÃO WONDERBLOCKS GEEK CAPTURE ──
 window.addEventListener('wb-geek-dados', function(e) {
   var d = e.detail;
   if (!d) return;
-
-  // Abrir painel Geek se não estiver aberto
   var panel = document.getElementById('geek-slide-panel');
   if (panel && !panel.classList.contains('open')) {
     var overlay = document.getElementById('geek-panel-overlay');
-    if (overlay) overlay.style.display = 'block';
+    if (overlay) overlay.classList.add('open');
     panel.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
-
   setTimeout(function() {
     if (d.nome)           { var el=document.getElementById('geek-nome'); if(el) el.value=d.nome; }
     if (d.preco_original) { var el=document.getElementById('geek-preco-original'); if(el) el.value=d.preco_original; }
     if (d.preco_final)    { var el=document.getElementById('geek-preco-final'); if(el) el.value=d.preco_final; }
     if (d.link)           { var el=document.getElementById('geek-link'); if(el) el.value=d.link; }
     if (d.img_url) {
-      var elUrl=document.getElementById('geek-img-url');
-      if(elUrl) elUrl.value=d.img_url;
-      var elPrev=document.getElementById('geek-img-preview');
-      var elWrap=document.getElementById('geek-img-preview-wrap');
-      if(elPrev) elPrev.src=d.img_url;
-      if(elWrap) elWrap.style.display='block';
+      var elUrl=document.getElementById('geek-img-url'); if(elUrl) elUrl.value=d.img_url;
+      var elPrev=document.getElementById('geek-img-preview'); if(elPrev) elPrev.src=d.img_url;
+      var elWrap=document.getElementById('geek-img-preview-wrap'); if(elWrap) elWrap.style.display='block';
     }
-    if (d.loja) {
-      var elLoja=document.getElementById('geek-loja');
-      if(elLoja) elLoja.value=d.loja;
-    }
-    // Auto-detectar categoria
+    if (d.loja) { var elLoja=document.getElementById('geek-loja'); if(elLoja) elLoja.value=d.loja; }
     if (d.nome) {
       var nome=(d.nome||'').toLowerCase();
       var cat=document.getElementById('geek-categoria');
@@ -3753,11 +3742,11 @@ window.addEventListener('wb-geek-dados', function(e) {
         else if(nome.includes('manga')||nome.includes('mangá')) cat.value='Manga';
       }
     }
-    // Recalcular desconto se houver função disponível
     if(typeof geekAtualizarDesconto === 'function') geekAtualizarDesconto();
     showToast('✓ Dados capturados pela extensão!', '#238636');
   }, 300);
 });
+</script>
 
 </body>
 </html>
