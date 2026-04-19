@@ -3562,24 +3562,29 @@ async function geekCopiarCardTabela(){
 function _geekBuildWpp(o){
   var po=Number(o.preco_original||0), pf=Number(o.preco_final||0);
   var desc=po&&pf?Math.round((1-pf/po)*100):0;
-  var seloEmoji=function(s){var v=(s||'').toLowerCase();if(v.includes('muito'))return'&#128309; MUITO BOM';if(v.includes('bom'))return'&#128994; BOM';if(v.includes('dia'))return'&#128993; NA MEDIA';return'&#128308; RUIM';};
   var rodapeMap={'Amazon':'_(Vendido e entregue pela Amazon)_','Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_','Mercado Livre':'_(Vendido e entregue pelo ML)_','Magalu':'_(Vendido e entregue pela Magalu)_','Ri Happy':'_(Vendido e entregue pela Ri Happy)_'};
-  var frasesCat={'Funko Pop':['&#128309; FUNKO POP em PROMOCAO!','&#127919; Funko Pop com preco BOM!'],'Board Game':['&#127922; JOGO em OFERTA!','&#127921; Board Game com preco otimo!'],'Action Figure':['&#129304; ACTION FIGURE em promocao!','&#9889; Figura de acao com preco bom!'],'Card Game':['&#127921; CARD GAME em oferta!'],'RPG':['&#127922; RPG em PROMOCAO!'],'Manga':['&#128218; MANGA em promocao!']};
-  var fArr=frasesCat[o.categoria]||['&#128293; OFERTA GEEK!'];
   var L=[];
-  L.push(fArr[Math.floor(Math.random()*fArr.length)]);
-  if(o.cupom) L.push('&#127903;&#65039; CUPOM: *'+o.cupom+'*'+(o.cupom_obs?' '+o.cupom_obs:''));
-  if(o.link) L.push('&#128073; '+o.link);
+  // Linha 1: nome em negrito
+  L.push('📦 *'+(o.nome||'')+'*');
+  // Linha 2: desconto
+  if(desc>0) L.push('🏷️ '+desc+'% OFF');
+  // Linha 3: link
+  if(o.link) L.push('👉 '+o.link);
   L.push('');
-  L.push('&#127991;&#65039; *'+(o.nome||'')+'*');
-  L.push('&#128230; Categoria: '+(o.categoria||''));
-  if(desc>0) L.push('&#128165; '+desc+'% OFF');
-  if(po) L.push('&#128184; De: R$'+fmt(po));
-  L.push('&#128293; Por: R$'+fmt(pf));
-  if(o.obs) L.push('&#8505;&#65039; '+o.obs);
-  L.push(seloEmoji(o.selo));
+  // Cupom
+  if(o.cupom){
+    var cupomObs=o.cupom_obs?' _('+o.cupom_obs+')_':'';
+    L.push('🎟️ CUPOM: *'+o.cupom+'*'+cupomObs);
+  }
+  // Preços
+  if(po) L.push('💸 De: ~R$'+fmt(po)+'~');
+  if(pf) L.push('🔥 Por: *R$'+fmt(pf)+'*');
+  // Obs (parcelas, pix, etc)
+  if(o.obs) L.push('🤏 '+o.obs);
+  // Rodapé loja
   L.push('');
   L.push(rodapeMap[o.loja]||'_(Confira o link)_');
+  L.push('_🔗 Link de afiliado — nos ajuda sem custo extra pra você!_');
   return L.join('\n');
 }
 
