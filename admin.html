@@ -20,26 +20,6 @@
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden;}
 
-/* ── CANAL GEEK ── */
-.geek-fetch-row{display:flex;gap:8px;margin-bottom:12px;}
-.geek-fetch-row .field-input{flex:1;}
-.btn-fetch{padding:9px 16px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;}
-.btn-fetch:disabled{opacity:.5;cursor:not-allowed;}
-.geek-auto-bar{background:var(--bg3);border:1px solid rgba(163,113,247,.25);border-radius:var(--radius);padding:10px 12px;display:none;align-items:center;gap:10px;margin-bottom:12px;}
-.geek-auto-img{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:6px;padding:2px;flex-shrink:0;}
-.geek-auto-info{flex:1;font-size:12px;color:var(--text2);}
-.geek-auto-info strong{display:block;font-size:13px;color:var(--text);}
-.geek-cat-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-.geek-cat-btn{padding:5px 12px;border:1.5px solid var(--border2);border-radius:20px;background:transparent;color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s;}
-.geek-cat-btn:hover{border-color:var(--purple2);color:var(--purple2);}
-.geek-cat-btn.selected{background:var(--purple-dim);border-color:var(--purple2);color:var(--purple2);}
-.geek-selos-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
-.geek-selo-opt{padding:10px 14px;border-radius:var(--radius);border:2px solid var(--border);cursor:pointer;font-size:13px;font-weight:700;transition:all .12s;text-align:center;letter-spacing:.03em;}
-.geek-selo-opt:hover{border-color:var(--border3);}
-.geek-selo-opt.selected{border-width:2px;}
-.geek-list-table{width:100%;border-collapse:collapse;}
-.geek-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:var(--purple-dim);color:var(--purple2);}
-
 /* ── LOGIN ── */
 .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;}
 .login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2.5rem;width:min(360px,calc(100vw - 2rem));}
@@ -472,15 +452,6 @@ select.field-input option{background:var(--bg3);}
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-section-label">Geek</div>
-      <button class="sidebar-item" onclick="showPage('geek')" id="nav-geek">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.4l-3.7 2.2.7-4.1L2 5.6l4.2-.9L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-        Geek
-        <span class="badge" id="badge-geek">0</span>
-      </button>
-    </div>
-
-    <div class="sidebar-section">
       <div class="sidebar-section-label">Externo</div>
       <a class="sidebar-item" href="https://supabase.com" target="_blank">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -816,69 +787,6 @@ select.field-input option{background:var(--bg3);}
       </div>
     </div>
 
-    <!-- PAGE: GEEK -->
-    <div id="page-geek" style="display:none;">
-      <div class="breadcrumb">
-        <span>Dashboard</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span class="current">Geek</span>
-      </div>
-      <h1 class="page-title">Produtos Geek</h1>
-
-      <div class="stats-bar" id="geek-stats-bar">
-        <button class="stat-pill active" data-gf="todos" onclick="filtrarGeekCategoria(this,'todos')">Todos (0)</button>
-        <button class="stat-pill mb" data-gf="action_figure" onclick="filtrarGeekCategoria(this,'action_figure')">Action Figure (0)</button>
-        <button class="stat-pill bom" data-gf="funko" onclick="filtrarGeekCategoria(this,'funko')">Funko (0)</button>
-        <button class="stat-pill med" data-gf="hq" onclick="filtrarGeekCategoria(this,'hq')">HQ / Mangá (0)</button>
-        <button class="stat-pill ruim" data-gf="games" onclick="filtrarGeekCategoria(this,'games')">Games (0)</button>
-        <button class="stat-pill" data-gf="outros" onclick="filtrarGeekCategoria(this,'outros')">Outros (0)</button>
-      </div>
-
-      <div class="table-card">
-        <div class="table-toolbar" style="flex-wrap:wrap;gap:8px;">
-          <div class="table-search" style="min-width:200px;flex:1;">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <input type="text" id="geek-search" placeholder="Buscar por nome ou categoria..." oninput="renderTabelaGeek()">
-          </div>
-          <select class="btn-filtro" id="geek-sort" onchange="renderTabelaGeek()" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:13px;padding:7px 14px;">
-            <option value="">Mais recentes</option>
-            <option value="desconto_desc">Maior desconto</option>
-            <option value="desconto_asc">Menor desconto</option>
-            <option value="preco_asc">Menor preço</option>
-            <option value="preco_desc">Maior preço</option>
-          </select>
-          <button class="btn-add" onclick="abrirGeekPainel()">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Adicionar
-          </button>
-        </div>
-        <div style="overflow-x:auto;">
-          <table id="tabela-geek">
-            <thead>
-              <tr>
-                <th style="width:32px"></th>
-                <th>Produto</th>
-                <th>Categoria</th>
-                <th>Loja</th>
-                <th>Cupom</th>
-                <th>Preço</th>
-                <th>Desconto</th>
-                <th>Status</th>
-                <th>Ação</th>
-              </tr>
-            </thead>
-            <tbody id="tabela-geek-body">
-              <tr><td colspan="9" class="loading-state">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="table-footer">
-          <span id="geek-footer-info" style="color:var(--text3);font-size:13px;">0 produtos</span>
-          <div class="pagination" id="geek-pagination"></div>
-        </div>
-      </div>
-    </div>
-
   </main>
 </div>
 
@@ -922,147 +830,8 @@ select.field-input option{background:var(--bg3);}
   </div>
 </div>
 
-<!-- SLIDE PANEL GEEK -->
-<div class="panel-overlay" id="geek-panel-overlay" onclick="fecharGeekPainel()"></div>
-<div class="slide-panel" id="geek-slide-panel">
-  <div class="panel-header">
-    <button class="panel-back" onclick="fecharGeekPainel()">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </button>
-    <h2 class="panel-title" id="geek-panel-title">Nova Oferta Geek</h2>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-      <span class="msg-ok-panel" id="geek-panel-msg-ok">&#10003; Salvo!</span>
-      <span class="msg-err-panel" id="geek-panel-msg-err">Erro ao salvar</span>
-    </div>
-  </div>
-  <div class="panel-body">
-    <input type="hidden" id="geek-edit-id">
-
-    <div class="section-divider" style="margin-top:0;">Buscar produto por URL</div>
-    <div class="geek-fetch-row">
-      <input type="text" class="field-input" id="geek-url-input" placeholder="Cole a URL do Mercado Livre ou Amazon...">
-      <button class="btn-fetch" id="geek-btn-fetch" onclick="geekBuscarProduto()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Buscar
-      </button>
-    </div>
-    <div class="geek-auto-bar" id="geek-auto-bar">
-      <img class="geek-auto-img" id="geek-auto-img" src="" alt="">
-      <div class="geek-auto-info">
-        <strong id="geek-auto-nome">—</strong>
-        <span id="geek-auto-loja">—</span>
-      </div>
-      <span id="geek-auto-badge" style="font-size:11px;padding:3px 8px;border-radius:10px;background:var(--green-dim);color:var(--green2);font-weight:700;">AUTO</span>
-    </div>
-    <div id="geek-fetch-status" style="font-size:12px;color:var(--text2);margin-bottom:10px;display:none;"></div>
-
-    <div class="section-divider">Dados do Produto</div>
-    <div class="panel-full">
-      <label class="field-label">Nome do produto *</label>
-      <input type="text" class="field-input" id="geek-nome" placeholder="Ex: Funko Pop Batman #01">
-    </div>
-    <div class="panel-grid">
-      <div>
-        <label class="field-label">Loja *</label>
-        <select class="field-input" id="geek-loja">
-          <option value="Amazon">Amazon</option>
-          <option value="Amazon Global">Amazon Global</option>
-          <option value="Mercado Livre">Mercado Livre</option>
-          <option value="Magalu">Magalu</option>
-          <option value="Ri Happy">Ri Happy</option>
-          <option value="Outros">Outros</option>
-        </select>
-      </div>
-      <div>
-        <label class="field-label">Categoria *</label>
-        <select class="field-input" id="geek-categoria">
-          <option value="Funko Pop">Funko Pop</option>
-          <option value="Board Game">Board Game</option>
-          <option value="Action Figure">Action Figure</option>
-          <option value="Card Game">Card Game</option>
-          <option value="RPG">RPG</option>
-          <option value="Manga">Manga</option>
-          <option value="Outros">Outros</option>
-        </select>
-      </div>
-    </div>
-    <div class="panel-grid">
-      <div>
-        <label class="field-label">Preco original (De:)</label>
-        <input type="text" class="field-input" id="geek-preco-original" placeholder="R$ 0,00" oninput="geekAtualizarDesconto()">
-      </div>
-      <div>
-        <label class="field-label">Preco final (Por:) *</label>
-        <input type="text" class="field-input" id="geek-preco-final" placeholder="R$ 0,00" oninput="geekAtualizarDesconto()">
-      </div>
-    </div>
-    <div class="panel-full" id="geek-desconto-preview" style="display:none;">
-      <div class="ppp-preview" style="display:block;" id="geek-desconto-bar">—</div>
-    </div>
-    <div class="panel-full">
-      <label class="field-label">URL da imagem</label>
-      <input type="text" class="field-input" id="geek-img-url" placeholder="https://...jpg" oninput="geekPreviewImg()">
-      <div id="geek-img-preview-wrap" style="margin-top:8px;display:none;">
-        <img id="geek-img-preview" src="" alt="" style="width:80px;height:80px;object-fit:contain;background:#fff;border-radius:6px;padding:4px;border:1px solid var(--border2);">
-      </div>
-    </div>
-    <div class="panel-full">
-      <label class="field-label">Link de afiliado *</label>
-      <input type="text" class="field-input" id="geek-link" placeholder="https://amzn.to/... ou link ML">
-    </div>
-    <div class="panel-grid">
-      <div>
-        <label class="field-label">Cupom</label>
-        <input type="text" class="field-input" id="geek-cupom" placeholder="Opcional" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
-      </div>
-      <div>
-        <label class="field-label">Obs. do cupom</label>
-        <input type="text" class="field-input" id="geek-cupom-obs" placeholder="Ex: (10% OFF)">
-      </div>
-    </div>
-
-    <div class="section-divider">Avaliacao</div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Use seu criterio editorial para avaliar o preco.</p>
-    <div class="geek-selos-grid">
-      <div class="geek-selo-opt selo-lancamento" data-gs="MUITO BOM" onclick="geekSelecionarSelo(this)">&#11088; Muito Bom — Preco excelente</div>
-      <div class="geek-selo-opt selo-hist" data-gs="BOM" onclick="geekSelecionarSelo(this)">&#128077; Bom — Vale a pena</div>
-      <div class="geek-selo-opt selo-30" data-gs="NA MEDIA" onclick="geekSelecionarSelo(this)">&#128528; Na Media — Preco regular</div>
-      <div class="geek-selo-opt selo-90" data-gs="RUIM" onclick="geekSelecionarSelo(this)">&#128078; Ruim — Preco alto</div>
-    </div>
-    <input type="hidden" id="geek-selo">
-
-    <div class="panel-full">
-      <label class="field-label">Observacao (opcional)</label>
-      <input type="text" class="field-input" id="geek-obs" placeholder="Ex: Melhor preco historico!">
-    </div>
-
-    <div class="section-divider">Preview Card (1000x1000)</div>
-    <div id="geek-card-preview-wrap" style="display:none;width:100%;aspect-ratio:1/1;border-radius:var(--radius-lg);overflow:hidden;background:var(--bg3);margin-bottom:12px;"></div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
-      <button class="btn-publish-action btn-gen-card" onclick="geekGerarCard()" id="geek-btn-gerar-card">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        Gerar card
-      </button>
-      <button class="btn-publish-action btn-copy-img" id="geek-btn-copiar-img" onclick="geekCopiarCard()" style="display:none;">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.3"/></svg>
-        Copiar imagem
-      </button>
-      <button class="btn-publish-action btn-copy-wpp" onclick="geekCopiarWppPainel()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.13 1 1 4.13 1 8c0 1.5.42 2.9 1.14 4.09L1 15l3-1.09A7 7 0 108 1z" stroke="currentColor" stroke-width="1.3"/></svg>
-        Copiar texto WhatsApp
-      </button>
-    </div>
-  </div>
-  <div class="panel-footer">
-    <button class="btn-cancel-panel" onclick="fecharGeekPainel()">Cancelar</button>
-    <button class="btn-save" id="geek-btn-save" onclick="salvarOfertaGeek()">Salvar Produto Geek</button>
-  </div>
-</div>
-
-<canvas id="canvas-geek" style="display:none;" width="1000" height="1000"></canvas>
-
-
-
+<!-- SLIDE PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="fecharPainel()"></div>
 <div class="slide-panel" id="slide-panel">
   <div class="panel-header">
     <button class="panel-back" onclick="fecharPainel()">
@@ -1254,6 +1023,7 @@ const LOJAS=[
   {value:'LEGO BR',logo:'logo_lego.png',frame:'assets/frame_lego.jpg'},
 ];
 const SELOS_CARD={'MUITO BOM':'assets/muito_bom.png','BOM':'assets/bom.png','NA MÉDIA':'assets/regular.png','RUIM':'assets/ruim.png'};
+const PPP_TEMPLATES={'MUITO BOM':'assets/template_muito_bom.png','BOM':'assets/template_bom.png','NA MÉDIA':'assets/template_regular.png','RUIM':'assets/template_ruim.png'};
 const TAG_SVGS={
   'Menor preço 30 dias':'assets/1_menor_preco_30.png',
   'Menor preço 60 dias':'assets/2_menor_preco_90.png',
@@ -1300,7 +1070,6 @@ function initApp(){
   initLojaDDMenu();
   initCupomLojaDD();
   initCupomListeners();
-  
   carregarOfertas();
   carregarBiblioteca();
   carregarUltimoCupom();
@@ -1328,7 +1097,6 @@ function showPage(p){
   document.getElementById('page-dashboard').style.display=p==='dashboard'?'block':'none';
   document.getElementById('page-biblioteca').style.display=p==='biblioteca'?'block':'none';
   document.getElementById('page-cupons').style.display=p==='cupons'?'block':'none';
-  document.getElementById('page-geek').style.display=p==='geek'?'block':'none';
   document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
   if(p==='dashboard') document.getElementById('nav-todas')?.classList.add('active');
   if(p==='cupons'){
@@ -1341,11 +1109,6 @@ function showPage(p){
       if(todasOfertas.length>0) renderRadar();
       else carregarOfertas();
     },50);
-  }
-  if(p==='geek'){
-    document.getElementById('nav-geek')?.classList.add('active');
-    if(geekTodasOfertas.length===0) geekCarregarOfertas();
-    else geekRenderTabela();
   }
 }
 
@@ -2363,9 +2126,9 @@ async function gerarCard(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistorica2){
     const ctx=canvas.getContext('2d');
     ctx.clearRect(0,0,1000,1000);
     ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,1000,1000);
-    // Frame da loja
-    const lojaObj=lojaByVal(loja);
-    const frame=await loadImg(lojaObj.frame);
+    // Template por PPP
+    const templatePPP=PPP_TEMPLATES[selo]||'assets/template_bom.png';
+    const frame=await loadImg(templatePPP);
     ctx.drawImage(frame,0,0,1000,1000);
     // Imagem do produto proporcional centralizada
     const urls=[imgUrl,imgFb].filter(Boolean);
@@ -2378,19 +2141,19 @@ async function gerarCard(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistorica2){
       if(h>maxH){w=Math.round(w*(maxH/h));h=maxH;}
       ctx.drawImage(prodImg,Math.round((1000-w)/2),Math.round((1000-h)/2)-20,w,h);
     }
-    // Selo PPP — canto superior direito 40px margem
+    // Selo PPP — canto superior direito 8px margem
     const seloFile=SELOS_CARD[selo]||'assets/bom.png';
-    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-40,40,220,220);}catch{}
+    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-8,8,220,220);}catch{}
     // Selos/Tags no canto superior esquerdo (máx 2, 10px gap)
     const tagFiles=[tagHistorica,tagHistorica2].filter(t=>t&&TAG_SVGS[t]);
-    let tagY=40;
+    let tagY=8;
     for(const tag of tagFiles){
       try{
         const tagImg=await loadImg(TAG_SVGS[tag]);
         const maxTW=380;
         const ratio=tagImg.naturalWidth>0?tagImg.naturalHeight/tagImg.naturalWidth:0.125;
         const tw=maxTW, th=Math.max(Math.round(maxTW*ratio),40);
-        ctx.drawImage(tagImg,40,tagY,tw,th);
+        ctx.drawImage(tagImg,8,tagY,tw,th);
         tagY+=th+10; // 10px gap entre selos
       }catch(e){console.warn('Tag error:',e);}
     }
@@ -2541,8 +2304,9 @@ async function gerarCardMobile(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistori
     const ctx=canvas.getContext('2d');
     ctx.clearRect(0,0,1000,1000);
     ctx.fillStyle='#ffffff';ctx.fillRect(0,0,1000,1000);
-    const lojaObj=lojaByVal(loja);
-    const frame=await loadImg(lojaObj.frame);
+    // Template por PPP
+    const templatePPP=PPP_TEMPLATES[selo]||'assets/template_bom.png';
+    const frame=await loadImg(templatePPP);
     ctx.drawImage(frame,0,0,1000,1000);
     const urls=[imgUrl,imgFb].filter(Boolean);
     let prodImg=null;
@@ -2554,17 +2318,18 @@ async function gerarCardMobile(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistori
       if(h>maxH){w=Math.round(w*(maxH/h));h=maxH;}
       ctx.drawImage(prodImg,Math.round((1000-w)/2),Math.round((1000-h)/2)-20,w,h);
     }
+    // Selo PPP — canto superior direito 8px margem
     const seloFile=SELOS_CARD[selo]||'assets/bom.png';
-    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-40,40,220,220);}catch{}
+    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-8,8,220,220);}catch{}
     const tagFiles=[tagHistorica,tagHistorica2].filter(t=>t&&TAG_SVGS[t]);
-    let tagY=40;
+    let tagY=8;
     for(const tag of tagFiles){
       try{
         const tagImg=await loadImg(TAG_SVGS[tag]);
         const maxTW=380;
         const ratio=tagImg.naturalWidth>0?tagImg.naturalHeight/tagImg.naturalWidth:0.125;
         const tw=maxTW,th=Math.max(Math.round(maxTW*ratio),40);
-        ctx.drawImage(tagImg,40,tagY,tw,th);
+        ctx.drawImage(tagImg,8,tagY,tw,th);
         tagY+=th+10;
       }catch(e){}
     }
@@ -2919,7 +2684,7 @@ function buildCupomWppText(){
   if(link) L.push(`👉 ${link}`);
   L.push('');
   L.push('_⚠️ Cupons são por tempo limitado e podem esgotar a qualquer momento. Confira disponibilidade e preço antes de finalizar a compra._');
-  return L.join('\\n');
+  return L.join('\n');
 }
 
 // Adicionar listeners para atualizar preview em tempo real
@@ -3131,562 +2896,6 @@ async function compartilharCupomImagem(){
   link.click();
   showToast('⬇ Imagem salva!','linear-gradient(135deg,#1d4ed8,#0ea5e9)');
 }
-
-
-
-// ══════════════════════════════════════════
-// ── GEEK ──
-// ══════════════════════════════════════════
-
-const GEEK_CATEGORIAS_MAP={
-  'Funko Pop':'Funko Pop','Board Game':'Board Game','Action Figure':'Action Figure',
-  'Card Game':'Card Game','RPG':'RPG','Manga':'Manga','Outros':'Outros'
-};
-
-let geekTodasOfertas=[], geekFiltroCategoria='todos', geekPagina=1, geekEditandoId=null, geekSeloSelecionado='', geekExpandedId=null;
-
-// Helper Supabase para Geek
-async function geekSupaFetch(path, opts){
-  const headers={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
-  const r=await fetch(SUPA+path, Object.assign({headers}, opts));
-  if(!r.ok){const t=await r.text();throw new Error(t);}
-  return r;
-}
-
-// ── Carregar do Supabase ──
-async function geekCarregarOfertas(){
-  try{
-    const r=await fetch(SUPA+'/rest/v1/ofertas_geek?order=created_at.desc&limit=300',{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
-    geekTodasOfertas=r.ok?await r.json():[];
-  }catch(e){geekTodasOfertas=[];}
-  geekAtualizarBadge();
-  geekRenderTabela();
-}
-
-function geekAtualizarBadge(){
-  const b=document.getElementById('badge-geek');
-  if(b) b.textContent=geekTodasOfertas.length;
-}
-
-// ── Filtros ──
-function filtrarGeekCategoria(el,cat){
-  geekFiltroCategoria=cat; geekPagina=1;
-  document.querySelectorAll('#geek-stats-bar .stat-pill').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  geekRenderTabela();
-}
-
-// ── Render tabela ──
-function geekRenderTabela(){
-  var q=(document.getElementById('geek-search')?.value||'').toLowerCase().trim();
-  var sort=document.getElementById('geek-sort')?.value||'';
-
-  var lista=geekTodasOfertas.filter(function(p){
-    if(geekFiltroCategoria!=='todos'&&(p.categoria||'').toLowerCase()!==geekFiltroCategoria) return false;
-    if(q&&!((p.nome||'').toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q))) return false;
-    return true;
-  });
-
-  var cats=[['todos','Todos'],['funko pop','Funko Pop'],['board game','Board Game'],['action figure','Action Figure'],['card game','Card Game'],['rpg','RPG'],['manga','Manga'],['outros','Outros']];
-  cats.forEach(function(c){
-    var btn=document.querySelector('#geek-stats-bar .stat-pill[data-gf="'+c[0]+'"]');
-    if(!btn) return;
-    var count=c[0]==='todos'?geekTodasOfertas.length:geekTodasOfertas.filter(function(p){return(p.categoria||'').toLowerCase()===c[0];}).length;
-    btn.textContent=c[1]+' ('+count+')';
-  });
-
-  if(sort==='desconto_desc') lista.sort(function(a,b){var da=a.preco_original&&a.preco_final?(a.preco_original-a.preco_final)/a.preco_original:0;var db=b.preco_original&&b.preco_final?(b.preco_original-b.preco_final)/b.preco_original:0;return db-da;});
-  else if(sort==='preco_asc') lista.sort(function(a,b){return(a.preco_final||0)-(b.preco_final||0);});
-  else if(sort==='preco_desc') lista.sort(function(a,b){return(b.preco_final||0)-(a.preco_final||0);});
-
-  var PER=20, total=lista.length, totalPages=Math.max(1,Math.ceil(total/PER));
-  if(geekPagina>totalPages) geekPagina=totalPages;
-  var page=lista.slice((geekPagina-1)*PER, geekPagina*PER);
-  document.getElementById('geek-footer-info').textContent=total+' produto'+(total!==1?'s':'');
-
-  var tbody=document.getElementById('tabela-geek-body');
-  if(!page.length){
-    tbody.innerHTML='<tr><td colspan="9" class="empty-state"><div class="empty-icon">&#127918;</div>Nenhum produto encontrado</td></tr>';
-  } else {
-    var rows='';
-    page.forEach(function(p){
-      var po=Number(p.preco_original||0), pf=Number(p.preco_final||0);
-      var desc=po&&pf?Math.round((1-pf/po)*100):0;
-      var isExp=geekExpandedId===p.id;
-      var imgHtml=p.img_url
-        ? '<img class="set-thumb" src="'+p.img_url+'" alt="" loading="lazy" style="background:#fff;">'
-        : '<div class="set-thumb-ph">&#127918;</div>';
-
-      rows += '<tr>';
-      rows += '<td></td>';
-      rows += '<td><div class="set-cell">'+imgHtml+'<div><div class="set-name" style="max-width:200px;">'+(p.nome||'—')+'</div><div style="font-size:11px;color:var(--text3);">'+(p.loja||'—')+'</div></div></div></td>';
-      rows += '<td><span class="geek-tag">'+(p.categoria||'—')+'</span></td>';
-      rows += '<td style="font-size:12px;color:var(--text2);">'+(p.loja||'—')+'</td>';
-      rows += '<td style="font-size:12px;">'+(p.cupom?'<span style="color:var(--amber2);font-weight:700;">'+p.cupom+'</span>':'<span style="color:var(--text3);">—</span>')+'</td>';
-      rows += '<td class="price-cell">'+(po?'<div class="original">R$'+fmt(po)+'</div>':'')+'<div class="final">R$'+fmt(pf)+'</div></td>';
-      rows += '<td>'+(desc?'<span style="font-weight:700;color:var(--green2);">'+desc+'% OFF</span>':'<span style="color:var(--text3);">—</span>')+'</td>';
-      rows += '<td>'+(p.selo?'<span class="badge-selo b-bom" style="font-size:11px;">'+p.selo+'</span>':'<span style="color:var(--text3);">—</span>')+'</td>';
-      rows += '<td><div class="action-btns">'
-        +'<button class="btn-icon" data-id="'+p.id+'" onclick="geekToggleExpand(this.dataset.id)">'
-        +'<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M4 '+(isExp?'10':'6')+'l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'
-        +'</button>'
-        +'<button class="btn-icon edit" data-id="'+p.id+'" title="Editar" onclick="geekEditarPorId(this.dataset.id)">'
-        +'<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="currentColor" stroke-width="1.3"/></svg>'
-        +'</button>'
-        +'<button class="btn-icon del" data-id="'+p.id+'" title="Excluir" onclick="geekExcluirPorId(this.dataset.id)">'
-        +'<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M5 4V2h6v2M6 7v5M10 7v5M4 4l1 9h6l1-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
-        +'</button>'
-        +'</div></td>';
-      rows += '</tr>';
-
-      if(isExp){
-        rows += '<tr class="expanded"><td colspan="9"><div class="expand-inner" style="grid-template-columns:200px 1fr;">';
-        rows += '<div class="expand-preview" id="geek-prev-'+p.id+'">';
-        rows += p.img_url?'<img src="'+p.img_url+'" alt="" style="width:100%;height:100%;object-fit:contain;">':'<div class="expand-preview-ph">Sem imagem</div>';
-        rows += '</div><div class="expand-actions">';
-        rows += '<div class="expand-title">Card 1000x1000</div>';
-        rows += '<button class="btn-publish-action btn-gen-card" id="geek-btn-gen-'+p.id+'" data-id="'+p.id+'" onclick="geekGerarCardTabela(this.dataset.id)">';
-        rows += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> Gerar card</button>';
-        rows += '<button class="btn-publish-action btn-copy-img" id="geek-btn-cimg-'+p.id+'" onclick="geekCopiarCardTabela()" style="display:none;">';
-        rows += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.3"/></svg> Copiar imagem</button>';
-        rows += '<button class="btn-publish-action btn-copy-wpp" data-id="'+p.id+'" onclick="geekCopiarWhatsApp_id(this.dataset.id)">';
-        rows += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1C4.13 1 1 4.13 1 8c0 1.5.42 2.9 1.14 4.09L1 15l3-1.09A7 7 0 108 1z" stroke="currentColor" stroke-width="1.3"/></svg> Copiar texto WhatsApp</button>';
-        rows += '<div class="expand-status" id="geek-status-'+p.id+'"></div>';
-        rows += '</div></div></td></tr>';
-      }
-    });
-    tbody.innerHTML=rows;
-  }
-  geekRenderPaginacao(total);
-}
-
-function geekGoPage(n){geekPagina=n;geekRenderTabela();}
-
-function geekRenderPaginacao(total){
-  var PER=20, totalPages=Math.max(1,Math.ceil(total/PER));
-  var pg=document.getElementById('geek-pagination');
-  if(!pg) return;
-  if(totalPages<=1){pg.innerHTML='';return;}
-  var html='';
-  if(geekPagina>1) html+='<button class="page-btn" onclick="geekGoPage('+(geekPagina-1)+')">&#8249;</button>';
-  for(var i=1;i<=totalPages;i++){
-    if(i===1||i===totalPages||Math.abs(i-geekPagina)<=1) html+='<button class="page-btn'+(i===geekPagina?' active':'')+'" onclick="geekGoPage('+i+')">'+i+'</button>';
-    else if(Math.abs(i-geekPagina)===2) html+='<span style="color:var(--text3);padding:0 4px;">&#8230;</span>';
-  }
-  if(geekPagina<totalPages) html+='<button class="page-btn" onclick="geekGoPage('+(geekPagina+1)+')">&#8250;</button>';
-  pg.innerHTML=html;
-}
-
-function geekToggleExpand(id){
-  geekExpandedId=geekExpandedId===id?null:id;
-  geekRenderTabela();
-}
-
-// ── Painel ──
-function abrirGeekPainel(titulo){
-  titulo=titulo||'Nova Oferta Geek';
-  document.getElementById('geek-panel-title').textContent=titulo;
-  document.getElementById('geek-panel-overlay').classList.add('open');
-  document.getElementById('geek-slide-panel').classList.add('open');
-}
-
-function fecharGeekPainel(){
-  document.getElementById('geek-panel-overlay').classList.remove('open');
-  document.getElementById('geek-slide-panel').classList.remove('open');
-  setTimeout(geekLimparPainel, 300);
-}
-
-function geekLimparPainel(){
-  geekEditandoId=null; geekSeloSelecionado='';
-  ['geek-edit-id','geek-url-input','geek-nome','geek-img-url','geek-preco-original','geek-preco-final','geek-cupom','geek-cupom-obs','geek-obs','geek-link','geek-selo'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.value='';
-  });
-  document.getElementById('geek-auto-bar').style.display='none';
-  document.getElementById('geek-fetch-status').style.display='none';
-  document.getElementById('geek-img-preview-wrap').style.display='none';
-  document.getElementById('geek-desconto-preview').style.display='none';
-  var cardWrap=document.getElementById('geek-card-preview-wrap');
-  if(cardWrap){cardWrap.style.display='none';cardWrap.innerHTML='';}
-  var btnCimg=document.getElementById('geek-btn-copiar-img');
-  if(btnCimg) btnCimg.style.display='none';
-  document.querySelectorAll('.geek-selo-opt').forEach(function(e){e.classList.remove('selected');});
-  document.getElementById('geek-btn-save').disabled=false;
-  document.getElementById('geek-btn-save').textContent='Salvar Produto Geek';
-}
-
-// ── Buscar por URL ──
-async function geekBuscarProduto(){
-  var url=document.getElementById('geek-url-input').value.trim();
-  if(!url) return;
-  var btn=document.getElementById('geek-btn-fetch');
-  var status=document.getElementById('geek-fetch-status');
-  btn.disabled=true;
-  btn.childNodes[btn.childNodes.length-1].textContent=' Buscando...';
-  status.textContent='Buscando produto...';
-  status.style.color='var(--text2)';
-  status.style.display='block';
-  document.getElementById('geek-auto-bar').style.display='none';
-
-  try{
-    var isML=url.includes('mercadolivre.com')||url.includes('mercadolibre.com')||url.includes('ml.com.br');
-    var isAmazon=url.includes('amazon.com')||url.includes('amzn.to')||url.includes('amazon.com.br');
-
-    if(isML){
-      var match=url.match(/MLB\d+/i)||url.match(/\/(\d{10,12})[-?]/);
-      if(!match) throw new Error('Nao consegui extrair o ID do produto. Tente colar a URL completa.');
-      var mlId=match[0].toUpperCase().startsWith('MLB')?match[0]:'MLB'+match[1];
-      var r=await fetch('https://api.mercadolibre.com/items/'+mlId);
-      if(!r.ok) throw new Error('Produto nao encontrado no Mercado Livre.');
-      var d=await r.json();
-      document.getElementById('geek-nome').value=d.title||'';
-      document.getElementById('geek-loja').value='Mercado Livre';
-      if(d.original_price) document.getElementById('geek-preco-original').value=fmt(d.original_price);
-      if(d.price) document.getElementById('geek-preco-final').value=fmt(d.price);
-      if(d.permalink) document.getElementById('geek-link').value=d.permalink;
-      var img=d.thumbnail?d.thumbnail.replace('I.jpg','O.jpg'):d.thumbnail||'';
-      if(img){
-        document.getElementById('geek-img-url').value=img;
-        document.getElementById('geek-img-preview').src=img;
-        document.getElementById('geek-img-preview-wrap').style.display='block';
-      }
-      document.getElementById('geek-auto-img').src=img||'';
-      document.getElementById('geek-auto-nome').textContent=d.title||'—';
-      document.getElementById('geek-auto-loja').textContent='Mercado Livre · '+mlId;
-      document.getElementById('geek-auto-bar').style.display='flex';
-      geekAtualizarDesconto();
-      status.textContent='&#10003; Dados do Mercado Livre carregados automaticamente!';
-      status.style.color='var(--green2)';
-    } else if(isAmazon){
-      var cleanUrl=url.split('?')[0];
-      var asinMatch=cleanUrl.match(/\/([A-Z0-9]{10})(?:[/?]|$)/);
-      if(!asinMatch) throw new Error('Nao consegui extrair o ASIN da URL Amazon. Cole a URL completa do produto.');
-      var asin=asinMatch[1];
-      var titulo='', imgProxy='';
-      try{
-        var ra=await fetch('https://wonderblocks-api.vercel.app/api/amazon?asin='+asin);
-        if(ra.ok){
-          var da=await ra.json();
-          var item=da?.raw?.ItemsResult?.Items?.[0];
-          titulo=item?.ItemInfo?.Title?.DisplayValue||da.title||da.Title||'';
-          imgProxy=item?.Images?.Primary?.Large?.URL||item?.Images?.Primary?.Medium?.URL||da.image||'';
-        }
-      }catch(e2){console.warn('[Amazon Proxy]',e2.message);}
-      if(titulo) document.getElementById('geek-nome').value=titulo;
-      if(imgProxy){
-        document.getElementById('geek-img-url').value=imgProxy;
-        document.getElementById('geek-img-preview').src=imgProxy;
-        document.getElementById('geek-img-preview-wrap').style.display='block';
-      }
-      document.getElementById('geek-loja').value='Amazon';
-      document.getElementById('geek-auto-nome').textContent=titulo||'ASIN: '+asin;
-      document.getElementById('geek-auto-loja').textContent='Amazon · '+asin;
-      document.getElementById('geek-auto-img').src=imgProxy||'';
-      document.getElementById('geek-auto-bar').style.display='flex';
-      status.textContent=titulo?'&#10003; Titulo carregado! Preencha o preco manualmente.':'&#9888; ASIN: '+asin+'. Proxy sem titulo — preencha manualmente.';
-      status.style.color=titulo?'var(--green2)':'var(--amber2)';
-    } else {
-      throw new Error('URL nao reconhecida. Aceito links do Mercado Livre ou Amazon.');
-    }
-  }catch(e){
-    status.textContent='&#9888; '+e.message;
-    status.style.color='var(--red2)';
-  }
-  btn.disabled=false;
-  btn.childNodes[btn.childNodes.length-1].textContent=' Buscar';
-}
-
-function geekPreviewImg(){
-  var v=document.getElementById('geek-img-url').value.trim();
-  if(v){
-    document.getElementById('geek-img-preview').src=v;
-    document.getElementById('geek-img-preview-wrap').style.display='block';
-  } else {
-    document.getElementById('geek-img-preview-wrap').style.display='none';
-  }
-}
-
-function geekAtualizarDesconto(){
-  var po=parsePreco(document.getElementById('geek-preco-original').value);
-  var pf=parsePreco(document.getElementById('geek-preco-final').value);
-  var wrap=document.getElementById('geek-desconto-preview');
-  var bar=document.getElementById('geek-desconto-bar');
-  if(pf&&!isNaN(pf)){
-    wrap.style.display='block';
-    if(po&&!isNaN(po)&&po>pf){
-      var pct=Math.round((1-pf/po)*100);
-      bar.innerHTML='De <strong>R$ '+fmt(po)+'</strong> por <strong>R$ '+fmt(pf)+'</strong> — <strong style="color:var(--green2)">'+pct+'% OFF</strong>';
-    } else {
-      bar.innerHTML='Preco: <strong>R$ '+fmt(pf)+'</strong>';
-    }
-  } else {
-    wrap.style.display='none';
-  }
-}
-
-function geekSelecionarSelo(el){
-  document.querySelectorAll('.geek-selo-opt').forEach(function(e){e.classList.remove('selected');});
-  el.classList.add('selected');
-  geekSeloSelecionado=el.dataset.gs;
-  document.getElementById('geek-selo').value=geekSeloSelecionado;
-}
-
-// ── Gerar Card 1000x1000 SEM TEMPLATE ──
-async function _geekGerarCanvas(imgUrl, po, pf){
-  var canvas=document.getElementById('canvas-geek');
-  var ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,1000,1000);
-
-  // Fundo branco limpo
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(0,0,1000,1000);
-
-  // Imagem do produto — centralizada, max 800x800, proporcional
-  if(imgUrl){
-    try{
-      var prodImg=await loadImg(imgUrl);
-      var maxW=800, maxH=800;
-      var w=prodImg.naturalWidth, h=prodImg.naturalHeight;
-      if(w===0||h===0){w=800;h=800;}
-      var scale=Math.min(maxW/w, maxH/h, 1);
-      var dw=Math.round(w*scale), dh=Math.round(h*scale);
-      var dx=Math.round((1000-dw)/2), dy=Math.round((1000-dh)/2);
-      ctx.drawImage(prodImg, dx, dy, dw, dh);
-    }catch(e){console.warn('Imagem nao carregada:',e.message);}
-  }
-
-  // Badge de desconto — canto superior direito, se houver desconto
-  if(po&&pf&&!isNaN(po)&&!isNaN(pf)&&po>pf){
-    var desc=Math.round((1-pf/po)*100);
-    if(desc>0){
-      var bx=1000-40-110, by=40;
-      ctx.fillStyle='rgba(220,38,38,0.92)';
-      ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(bx,by,110,110,55);
-      else ctx.arc(bx+55,by+55,55,0,Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle='#fff';
-      ctx.textAlign='center';
-      ctx.textBaseline='middle';
-      ctx.font='900 34px Arial Black,Arial,sans-serif';
-      ctx.fillText(desc+'%', bx+55, by+40);
-      ctx.font='700 20px Arial,sans-serif';
-      ctx.fillText('OFF', bx+55, by+72);
-    }
-  }
-
-  return canvas;
-}
-
-async function geekGerarCard(){
-  var btn=document.getElementById('geek-btn-gerar-card');
-  btn.disabled=true;
-  btn.childNodes[btn.childNodes.length-1].textContent=' Gerando...';
-  var imgUrl=document.getElementById('geek-img-url').value.trim();
-  var po=parsePreco(document.getElementById('geek-preco-original').value);
-  var pf=parsePreco(document.getElementById('geek-preco-final').value);
-  try{
-    var canvas=await _geekGerarCanvas(imgUrl, po, pf);
-    var pc=document.createElement('canvas');
-    pc.width=1000; pc.height=1000;
-    pc.getContext('2d').drawImage(canvas,0,0);
-    pc.style.cssText='width:100%;height:100%;display:block;border-radius:var(--radius-lg);';
-    var wrap=document.getElementById('geek-card-preview-wrap');
-    wrap.innerHTML=''; wrap.appendChild(pc); wrap.style.display='block';
-    document.getElementById('geek-btn-copiar-img').style.display='flex';
-    showToast('&#10003; Card gerado!','#238636');
-  }catch(e){showToast('Erro: '+e.message,'#da3633');}
-  btn.disabled=false;
-  btn.childNodes[btn.childNodes.length-1].textContent=' Gerar card';
-}
-
-async function geekGerarCardTabela(id){
-  var o=geekTodasOfertas.find(function(x){return x.id===id;});
-  if(!o) return;
-  var btn=document.getElementById('geek-btn-gen-'+id);
-  var status=document.getElementById('geek-status-'+id);
-  if(btn){btn.disabled=true;btn.childNodes[btn.childNodes.length-1].textContent=' Gerando...';}
-  try{
-    var canvas=await _geekGerarCanvas(o.img_url, o.preco_original, o.preco_final);
-    var prev=document.getElementById('geek-prev-'+id);
-    if(prev){
-      var pc=document.createElement('canvas');
-      pc.width=1000; pc.height=1000;
-      pc.getContext('2d').drawImage(canvas,0,0);
-      pc.style.cssText='width:100%;height:100%;display:block;border-radius:8px;';
-      prev.innerHTML=''; prev.appendChild(pc);
-    }
-    if(document.getElementById('geek-btn-cimg-'+id)) document.getElementById('geek-btn-cimg-'+id).style.display='flex';
-    if(status){status.textContent='&#10003; Card pronto!';status.style.color='var(--green2)';status.style.display='block';}
-  }catch(e){
-    if(status){status.textContent='Erro: '+e.message;status.style.color='var(--red2)';status.style.display='block';}
-  }
-  if(btn){btn.disabled=false;btn.childNodes[btn.childNodes.length-1].textContent=' Gerar card 1000x1000';}
-}
-
-async function geekCopiarCard(){
-  var canvas=document.getElementById('canvas-geek');
-  try{
-    await new Promise(function(res,rej){canvas.toBlob(async function(blob){try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);res();}catch(e){rej(e);};},'image/png');});
-    showToast('&#10003; Imagem copiada!','linear-gradient(135deg,#6e40c9,#a371f7)');
-  }catch{
-    var link=document.createElement('a');
-    link.download='wonderblocks-geek.png';
-    link.href=canvas.toDataURL('image/png');
-    link.click();
-    showToast('&#11015; Imagem salva!','#d29922');
-  }
-}
-
-async function geekCopiarCardTabela(){
-  var canvas=document.getElementById('canvas-geek');
-  try{
-    await new Promise(function(res,rej){canvas.toBlob(async function(blob){try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);res();}catch(e){rej(e);};},'image/png');});
-    showToast('&#10003; Imagem copiada!','linear-gradient(135deg,#6e40c9,#a371f7)');
-  }catch{
-    var link=document.createElement('a');link.download='wonderblocks-geek.png';link.href=canvas.toDataURL('image/png');link.click();
-    showToast('&#11015; Imagem salva!','#d29922');
-  }
-}
-
-// ── WhatsApp ──
-function _geekBuildWpp(o){
-  var po=Number(o.preco_original||0), pf=Number(o.preco_final||0);
-  var desc=po&&pf?Math.round((1-pf/po)*100):0;
-  var seloEmoji=function(s){var v=(s||'').toLowerCase();if(v.includes('muito'))return'&#128309; MUITO BOM';if(v.includes('bom'))return'&#128994; BOM';if(v.includes('dia'))return'&#128993; NA MEDIA';return'&#128308; RUIM';};
-  var rodapeMap={'Amazon':'_(Vendido e entregue pela Amazon)_','Amazon Global':'_(Vendido e entregue pela Amazon Internacional)_','Mercado Livre':'_(Vendido e entregue pelo ML)_','Magalu':'_(Vendido e entregue pela Magalu)_','Ri Happy':'_(Vendido e entregue pela Ri Happy)_'};
-  var frasesCat={'Funko Pop':['&#128309; FUNKO POP em PROMOCAO!','&#127919; Funko Pop com preco BOM!'],'Board Game':['&#127922; JOGO em OFERTA!','&#127921; Board Game com preco otimo!'],'Action Figure':['&#129304; ACTION FIGURE em promocao!','&#9889; Figura de acao com preco bom!'],'Card Game':['&#127921; CARD GAME em oferta!'],'RPG':['&#127922; RPG em PROMOCAO!'],'Manga':['&#128218; MANGA em promocao!']};
-  var fArr=frasesCat[o.categoria]||['&#128293; OFERTA GEEK!'];
-  var L=[];
-  L.push(fArr[Math.floor(Math.random()*fArr.length)]);
-  if(o.cupom) L.push('&#127903;&#65039; CUPOM: *'+o.cupom+'*'+(o.cupom_obs?' '+o.cupom_obs:''));
-  if(o.link) L.push('&#128073; '+o.link);
-  L.push('');
-  L.push('&#127991;&#65039; *'+(o.nome||'')+'*');
-  L.push('&#128230; Categoria: '+(o.categoria||''));
-  if(desc>0) L.push('&#128165; '+desc+'% OFF');
-  if(po) L.push('&#128184; De: R$'+fmt(po));
-  L.push('&#128293; Por: R$'+fmt(pf));
-  if(o.obs) L.push('&#8505;&#65039; '+o.obs);
-  L.push(seloEmoji(o.selo));
-  L.push('');
-  L.push(rodapeMap[o.loja]||'_(Confira o link)_');
-  return L.join('\n');
-}
-
-function geekCopiarWhatsApp(o){
-  navigator.clipboard.writeText(_geekBuildWpp(o)).then(function(){showToast('&#10003; Texto copiado!','#238636');});
-}
-
-function geekCopiarWppPainel(){
-  var o={
-    nome:document.getElementById('geek-nome').value.trim(),
-    loja:document.getElementById('geek-loja').value,
-    categoria:document.getElementById('geek-categoria').value,
-    preco_original:parsePreco(document.getElementById('geek-preco-original').value)||0,
-    preco_final:parsePreco(document.getElementById('geek-preco-final').value)||0,
-    cupom:document.getElementById('geek-cupom').value.trim(),
-    cupom_obs:document.getElementById('geek-cupom-obs').value.trim(),
-    obs:document.getElementById('geek-obs').value.trim(),
-    link:document.getElementById('geek-link').value.trim(),
-    selo:geekSeloSelecionado
-  };
-  navigator.clipboard.writeText(_geekBuildWpp(o)).then(function(){showToast('&#10003; Texto copiado!','#238636');});
-}
-
-
-function geekCopiarWhatsApp_id(id){
-  var o=geekTodasOfertas.find(function(x){return x.id===id;});
-  if(o) geekCopiarWhatsApp(o);
-}
-
-function geekEditarPorId(id){
-  var o=geekTodasOfertas.find(function(x){return x.id===id;});
-  if(o) geekEditarOferta(o);
-}
-
-
-function geekExcluirPorId(id){
-  var o=geekTodasOfertas.find(function(x){return x.id===id;});
-  if(o) geekExcluirOferta(id, o.nome||'este produto');
-}
-
-// ── Salvar ──
-async function salvarOfertaGeek(){
-  var nome=document.getElementById('geek-nome').value.trim();
-  var link=document.getElementById('geek-link').value.trim();
-  var pf=parsePreco(document.getElementById('geek-preco-final').value);
-  if(!nome){showToast('Preencha o nome do produto','var(--amber)');return;}
-  if(!link){showToast('Preencha o link de afiliado','var(--amber)');return;}
-  if(isNaN(pf)||pf<=0){showToast('Preencha o preco final','var(--amber)');return;}
-
-  var payload={
-    nome,
-    loja:document.getElementById('geek-loja').value,
-    categoria:document.getElementById('geek-categoria').value,
-    preco_original:parsePreco(document.getElementById('geek-preco-original').value)||null,
-    preco_final:pf,
-    img_url:document.getElementById('geek-img-url').value.trim()||null,
-    link,
-    cupom:document.getElementById('geek-cupom').value.trim()||null,
-    cupom_obs:document.getElementById('geek-cupom-obs').value.trim()||null,
-    obs:document.getElementById('geek-obs').value.trim()||null,
-    selo:geekSeloSelecionado||null,
-    updated_at:new Date().toISOString()
-  };
-
-  var btn=document.getElementById('geek-btn-save');
-  btn.disabled=true; btn.textContent='Salvando...';
-  try{
-    if(geekEditandoId){
-      await geekSupaFetch('/rest/v1/ofertas_geek?id=eq.'+geekEditandoId,{method:'PATCH',body:JSON.stringify(payload)});
-    } else {
-      await geekSupaFetch('/rest/v1/ofertas_geek',{method:'POST',body:JSON.stringify(payload)});
-    }
-    showToast(geekEditandoId?'&#10003; Produto atualizado!':'&#10003; Produto salvo!','#238636');
-    fecharGeekPainel();
-    await geekCarregarOfertas();
-  }catch(e){
-    var errEl=document.getElementById('geek-panel-msg-err');
-    errEl.textContent='Erro: '+e.message; errEl.style.display='flex';
-    setTimeout(function(){errEl.style.display='none';},4000);
-  }
-  btn.disabled=false; btn.textContent='Salvar Produto Geek';
-}
-
-// ── Editar ──
-function geekEditarOferta(p){
-  geekEditandoId=p.id;
-  document.getElementById('geek-edit-id').value=p.id;
-  document.getElementById('geek-nome').value=p.nome||'';
-  document.getElementById('geek-img-url').value=p.img_url||'';
-  document.getElementById('geek-preco-original').value=p.preco_original||'';
-  document.getElementById('geek-preco-final').value=p.preco_final||'';
-  document.getElementById('geek-cupom').value=p.cupom||'';
-  document.getElementById('geek-cupom-obs').value=p.cupom_obs||'';
-  document.getElementById('geek-obs').value=p.obs||'';
-  document.getElementById('geek-link').value=p.link||'';
-  document.getElementById('geek-loja').value=p.loja||'Amazon';
-  document.getElementById('geek-categoria').value=p.categoria||'Outros';
-  if(p.img_url){document.getElementById('geek-img-preview').src=p.img_url;document.getElementById('geek-img-preview-wrap').style.display='block';}
-  if(p.selo){
-    geekSeloSelecionado=p.selo;
-    document.getElementById('geek-selo').value=p.selo;
-    document.querySelectorAll('.geek-selo-opt').forEach(function(e){if(e.dataset.gs===p.selo)e.classList.add('selected');});
-  }
-  geekAtualizarDesconto();
-  abrirGeekPainel('Editar Oferta Geek');
-}
-
-// ── Excluir ──
-async function geekExcluirOferta(id,nome){
-  if(!confirm('Excluir "'+nome+'"? Esta acao nao pode ser desfeita.')) return;
-  try{
-    await geekSupaFetch('/rest/v1/ofertas_geek?id=eq.'+id,{method:'DELETE'});
-    showToast('&#10003; Produto excluido','#238636');
-    geekCarregarOfertas();
-  }catch(e){showToast('Erro ao excluir: '+e.message,'var(--red2)');}
-}
-
 
 function copiarCupomWpp(){
   const texto=buildCupomWppText();
