@@ -3455,23 +3455,32 @@ async function _geekGerarCanvas(imgUrl, po, pf){
     }catch(e){console.warn('Imagem nao carregada:',e.message);}
   }
 
-  // Badge de desconto — canto superior direito, se houver desconto
+  // Stroke gradiente nas bordas — #661DB1 → #00FFEC, 20px
+  var grad=ctx.createLinearGradient(0,0,1000,1000);
+  grad.addColorStop(0,'#661DB1');
+  grad.addColorStop(1,'#00FFEC');
+  ctx.strokeStyle=grad;
+  ctx.lineWidth=20;
+  ctx.strokeRect(10,10,980,980);
+
+  // Badge de desconto — retângulo horizontal, canto superior direito, 30px das bordas
   if(po&&pf&&!isNaN(po)&&!isNaN(pf)&&po>pf){
     var desc=Math.round((1-pf/po)*100);
     if(desc>0){
-      var bx=1000-40-110, by=40;
-      ctx.fillStyle='rgba(220,38,38,0.92)';
+      var label='-'+desc+'%';
+      ctx.font='900 36px "Arial Black",Arial,sans-serif';
+      var tw=ctx.measureText(label).width;
+      var bw=tw+40, bh=52, br=10;
+      var bx=1000-30-bw, by=30;
+      ctx.fillStyle='#FF2A2A';
       ctx.beginPath();
-      if(ctx.roundRect) ctx.roundRect(bx,by,110,110,55);
-      else ctx.arc(bx+55,by+55,55,0,Math.PI*2);
+      if(ctx.roundRect) ctx.roundRect(bx,by,bw,bh,br);
+      else{ ctx.moveTo(bx+br,by);ctx.lineTo(bx+bw-br,by);ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+br);ctx.lineTo(bx+bw,by+bh-br);ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-br,by+bh);ctx.lineTo(bx+br,by+bh);ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-br);ctx.lineTo(bx,by+br);ctx.quadraticCurveTo(bx,by,bx+br,by); }
       ctx.fill();
       ctx.fillStyle='#fff';
       ctx.textAlign='center';
       ctx.textBaseline='middle';
-      ctx.font='900 34px Arial Black,Arial,sans-serif';
-      ctx.fillText(desc+'%', bx+55, by+40);
-      ctx.font='700 20px Arial,sans-serif';
-      ctx.fillText('OFF', bx+55, by+72);
+      ctx.fillText(label, bx+bw/2, by+bh/2);
     }
   }
 
