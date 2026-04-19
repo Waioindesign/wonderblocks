@@ -2901,24 +2901,35 @@ function copiarCupomWpp(){
 }
 
 // ── LISTENER DA EXTENSÃO WONDERBLOCKS CAPTURE ──
-// Recebe dados capturados pela extensão e preenche o painel Wonder Pop
+// Recebe dados capturados pela extensão e preenche o painel automaticamente
 window.addEventListener('wb-geek-dados', function(e) {
   const d = e.detail;
   if (!d) return;
 
-  // Navegar para a página Wonder Pop e abrir o painel
-  showPage('geek');
-  if (typeof abrirGeekPainel === 'function') abrirGeekPainel('Novo Produto Wonder Pop');
+  // Abrir o painel — tenta geek primeiro, cai no painel LEGO se não existir
+  if (typeof abrirGeekPainel === 'function') {
+    abrirGeekPainel('Novo Produto Wonder Pop');
+  } else if (typeof abrirPainel === 'function') {
+    abrirPainel('Novo Produto', false);
+  }
 
-  // Aguardar o painel abrir antes de preencher os campos
   setTimeout(function() {
+    // Painel Geek (Wonder Pop)
     if (d.nome)           { const el=document.getElementById('geek-nome');           if(el) el.value=d.nome; }
     if (d.loja)           { const el=document.getElementById('geek-loja');           if(el) el.value=d.loja; }
     if (d.img_url)        { const el=document.getElementById('geek-img-url');        if(el) { el.value=d.img_url; if(typeof geekPreviewImg==='function') geekPreviewImg(); } }
     if (d.link)           { const el=document.getElementById('geek-link');           if(el) el.value=d.link; }
     if (d.preco_original) { const el=document.getElementById('geek-preco-original'); if(el) el.value=d.preco_original; }
-    if (d.preco_final)    { const el=document.getElementById('geek-preco-final');    if(el) el.value=d.preco_final; }
+    if (d.preco_final)    { const el=document.getElementById('geek-preco-final');    if(el) { el.value=d.preco_final; el.dispatchEvent(new Event('input')); } }
     if (typeof geekAtualizarDesconto === 'function') geekAtualizarDesconto();
+
+    // Painel LEGO (fallback)
+    if (d.nome)           { const el=document.getElementById('p-nome');  if(el) el.value=d.nome; }
+    if (d.link)           { const el=document.getElementById('p-link');  if(el) el.value=d.link; }
+    if (d.preco_original) { const el=document.getElementById('p-po');    if(el) el.value=d.preco_original; }
+    if (d.preco_final)    { const el=document.getElementById('p-pf');    if(el) { el.value=d.preco_final; el.dispatchEvent(new Event('input')); } }
+    if (d.loja && typeof selecionarLoja === 'function') selecionarLoja(d.loja);
+
     if (typeof showToast === 'function') showToast('✓ Produto capturado pela extensão!', '#238636');
   }, 400);
 });
