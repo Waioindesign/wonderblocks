@@ -2431,6 +2431,7 @@ function copiarWhatsApp(o){
   // Linha em branco antes do rodapé
   L.push('');
   L.push(rodape);
+  L.push('_🔗 Link de afiliado — nos ajuda sem custo extra pra você!_');
 
   navigator.clipboard.writeText(L.join('\n')).then(()=>showToast('✓ Texto copiado!','#238636'));
 }
@@ -2680,6 +2681,7 @@ function buildCupomWppText(){
   if(link) L.push(`👉 ${link}`);
   L.push('');
   L.push('_⚠️ Cupons são por tempo limitado e podem esgotar a qualquer momento. Confira disponibilidade e preço antes de finalizar a compra._');
+  L.push('_🔗 Link de afiliado — nos ajuda sem custo extra pra você!_');
   return L.join('\n');
 }
 
