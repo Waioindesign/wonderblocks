@@ -827,11 +827,13 @@ select.field-input option{background:var(--bg3);}
 
       <div class="stats-bar" id="geek-stats-bar">
         <button class="stat-pill active" data-gf="todos" onclick="filtrarGeekCategoria(this,'todos')">Todos (0)</button>
-        <button class="stat-pill mb" data-gf="action_figure" onclick="filtrarGeekCategoria(this,'action_figure')">Action Figure (0)</button>
-        <button class="stat-pill bom" data-gf="funko" onclick="filtrarGeekCategoria(this,'funko')">Funko (0)</button>
-        <button class="stat-pill med" data-gf="hq" onclick="filtrarGeekCategoria(this,'hq')">HQ / Mangá (0)</button>
-        <button class="stat-pill ruim" data-gf="games" onclick="filtrarGeekCategoria(this,'games')">Games (0)</button>
-        <button class="stat-pill" data-gf="outros" onclick="filtrarGeekCategoria(this,'outros')">Outros (0)</button>
+        <button class="stat-pill" data-gf="Funko Pop" onclick="filtrarGeekCategoria(this,'Funko Pop')">Funko Pop (0)</button>
+        <button class="stat-pill" data-gf="Board Game" onclick="filtrarGeekCategoria(this,'Board Game')">Board Game (0)</button>
+        <button class="stat-pill" data-gf="Action Figure" onclick="filtrarGeekCategoria(this,'Action Figure')">Action Figure (0)</button>
+        <button class="stat-pill" data-gf="Card Game" onclick="filtrarGeekCategoria(this,'Card Game')">Card Game (0)</button>
+        <button class="stat-pill" data-gf="RPG" onclick="filtrarGeekCategoria(this,'RPG')">RPG (0)</button>
+        <button class="stat-pill" data-gf="Manga" onclick="filtrarGeekCategoria(this,'Manga')">Manga (0)</button>
+        <button class="stat-pill" data-gf="Outros" onclick="filtrarGeekCategoria(this,'Outros')">Outros (0)</button>
       </div>
 
       <div class="table-card">
@@ -3183,17 +3185,18 @@ function geekRenderTabela(){
   var sort=document.getElementById('geek-sort')?.value||'';
 
   var lista=geekTodasOfertas.filter(function(p){
-    if(geekFiltroCategoria!=='todos'&&(p.categoria||'').toLowerCase()!==geekFiltroCategoria) return false;
+    if(geekFiltroCategoria!=='todos'&&(p.categoria||'')!==geekFiltroCategoria) return false;
     if(q&&!((p.nome||'').toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q))) return false;
     return true;
   });
 
-  var cats=[['todos','Todos'],['funko pop','Funko Pop'],['board game','Board Game'],['action figure','Action Figure'],['card game','Card Game'],['rpg','RPG'],['manga','Manga'],['outros','Outros']];
-  cats.forEach(function(c){
-    var btn=document.querySelector('#geek-stats-bar .stat-pill[data-gf="'+c[0]+'"]');
+  var cats=['todos','Funko Pop','Board Game','Action Figure','Card Game','RPG','Manga','Outros'];
+  cats.forEach(function(cat){
+    var btn=document.querySelector('#geek-stats-bar .stat-pill[data-gf="'+cat+'"]');
     if(!btn) return;
-    var count=c[0]==='todos'?geekTodasOfertas.length:geekTodasOfertas.filter(function(p){return(p.categoria||'').toLowerCase()===c[0];}).length;
-    btn.textContent=c[1]+' ('+count+')';
+    var count=cat==='todos'?geekTodasOfertas.length:geekTodasOfertas.filter(function(p){return(p.categoria||'')===cat;}).length;
+    var label=cat==='todos'?'Todos':cat;
+    btn.textContent=label+' ('+count+')';
   });
 
   if(sort==='desconto_desc') lista.sort(function(a,b){var da=a.preco_original&&a.preco_final?(a.preco_original-a.preco_final)/a.preco_original:0;var db=b.preco_original&&b.preco_final?(b.preco_original-b.preco_final)/b.preco_original:0;return db-da;});
