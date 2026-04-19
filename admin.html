@@ -1026,13 +1026,14 @@ const SELOS_CARD={'MUITO BOM':'assets/muito_bom.png','BOM':'assets/bom.png','NA 
 const PPP_TEMPLATES={'MUITO BOM':'assets/template_muito_bom.jpg','BOM':'assets/template_bom.jpg','NA MÉDIA':'assets/template_regular.jpg','RUIM':'assets/template_ruim.jpg'};
 const TAG_SVGS={
   'Menor preço 30 dias':'assets/1_menor_preco_30.png',
-  'Menor preço 60 dias':'assets/2_menor_preco_90.png',
+  'Menor preço 60 dias':'assets/2_menor_preco_60.png',
   'Menor preço 90 dias':'assets/3_menor_preco_90.png',
   'Melhor preço histórico':'assets/4_melhor_preco_historico.png',
   'Lançamento':'assets/5_lancamento.png',
   'Será descontinuado':'assets/6_sera_descontinuado.png',
   'Descontinuado':'assets/7_descontinuado.png',
   'Pré-venda':'assets/8_lancamento.png',
+  'Último disponível':'assets/9_ultimo_disponivel.png',
 };
 const FRASES={'MUITO BOM':['🚨 EXCELENTE PPP!!!','🚨 ÓTIMO VALOR POR PEÇA!!!','🚨 PREÇO MUITO BOM!','🚨 ESSE TÁ VALENDO MUITO!','🚨 PPP MUITO BOM!','🚨 ÓTIMO PREÇO!'],'BOM':['🚨 BOM PPP!!!','🚨 ÓTIMO VALOR POR PEÇA!!!','🚨 PPP BEM INTERESSANTE!','🚨 ESSE VALE MUITO!','🚨 BOM PREÇO POR PEÇA!','🚨 PREÇO BOM DEMAIS!'],'NA MÉDIA':['🚨 PREÇO POR PEÇA OK!','🚨 PPP NA MÉDIA!','🚨 PREÇO POR PEÇA (REGULAR)'],'RUIM':['🚨 PREÇO POR PEÇA ACIMA - EXIGE ATENÇÃO!','🚨 PPP ELEVADO (SET INTERESSANTE)','🚨 PREÇO POR PEÇA (RUIM)','🚨 VALOR ALTO NO PPP']};
 
@@ -2141,20 +2142,17 @@ async function gerarCard(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistorica2){
       if(h>maxH){w=Math.round(w*(maxH/h));h=maxH;}
       ctx.drawImage(prodImg,Math.round((1000-w)/2),Math.round((1000-h)/2)-20,w,h);
     }
-    // Selo PPP — canto superior direito 8px margem
+    // Selo PPP — canto superior direito, tamanho original 286x286, margem 50px
     const seloFile=SELOS_CARD[selo]||'assets/bom.png';
-    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-8,8,220,220);}catch{}
-    // Selos/Tags no canto superior esquerdo (máx 2, 10px gap)
+    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-286-50,50,286,286);}catch{}
+    // Tags no canto superior esquerdo, tamanho original 418x52, margem 50px
     const tagFiles=[tagHistorica,tagHistorica2].filter(t=>t&&TAG_SVGS[t]);
-    let tagY=8;
+    let tagY=50;
     for(const tag of tagFiles){
       try{
         const tagImg=await loadImg(TAG_SVGS[tag]);
-        const maxTW=380;
-        const ratio=tagImg.naturalWidth>0?tagImg.naturalHeight/tagImg.naturalWidth:0.125;
-        const tw=maxTW, th=Math.max(Math.round(maxTW*ratio),40);
-        ctx.drawImage(tagImg,8,tagY,tw,th);
-        tagY+=th+10; // 10px gap entre selos
+        ctx.drawImage(tagImg,50,tagY,418,52);
+        tagY+=52+10; // 10px gap entre tags
       }catch(e){console.warn('Tag error:',e);}
     }
     // Preview inline
@@ -2318,19 +2316,17 @@ async function gerarCardMobile(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistori
       if(h>maxH){w=Math.round(w*(maxH/h));h=maxH;}
       ctx.drawImage(prodImg,Math.round((1000-w)/2),Math.round((1000-h)/2)-20,w,h);
     }
-    // Selo PPP — canto superior direito 8px margem
+    // Selo PPP — canto superior direito, tamanho original 286x286, margem 50px
     const seloFile=SELOS_CARD[selo]||'assets/bom.png';
-    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-220-8,8,220,220);}catch{}
+    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-286-50,50,286,286);}catch{}
+    // Tags no canto superior esquerdo, tamanho original 418x52, margem 50px
     const tagFiles=[tagHistorica,tagHistorica2].filter(t=>t&&TAG_SVGS[t]);
-    let tagY=8;
+    let tagY=50;
     for(const tag of tagFiles){
       try{
         const tagImg=await loadImg(TAG_SVGS[tag]);
-        const maxTW=380;
-        const ratio=tagImg.naturalWidth>0?tagImg.naturalHeight/tagImg.naturalWidth:0.125;
-        const tw=maxTW,th=Math.max(Math.round(maxTW*ratio),40);
-        ctx.drawImage(tagImg,8,tagY,tw,th);
-        tagY+=th+10;
+        ctx.drawImage(tagImg,50,tagY,418,52);
+        tagY+=52+10;
       }catch(e){}
     }
     // Preview mobile
