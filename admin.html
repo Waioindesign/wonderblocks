@@ -2144,7 +2144,7 @@ async function gerarCard(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistorica2){
     }
     // Selo PPP — canto superior direito, tamanho original 286x286, margem 50px
     const seloFile=SELOS_CARD[selo]||'assets/bom.png';
-    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-286-50,50,286,286);}catch{}
+    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-286-8,8,286,286);}catch{}
     // Tags no canto superior esquerdo, tamanho original 418x52, margem 50px
     const tagFiles=[tagHistorica,tagHistorica2].filter(t=>t&&TAG_SVGS[t]);
     let tagY=50;
@@ -2318,7 +2318,7 @@ async function gerarCardMobile(id,loja,selo,imgUrl,imgFb,tagHistorica,tagHistori
     }
     // Selo PPP — canto superior direito, tamanho original 286x286, margem 50px
     const seloFile=SELOS_CARD[selo]||'assets/bom.png';
-    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-286-50,50,286,286);}catch{}
+    try{const seloImg=await loadImg(seloFile);ctx.drawImage(seloImg,1000-286-8,8,286,286);}catch{}
     // Tags no canto superior esquerdo, tamanho original 418x52, margem 50px
     const tagFiles=[tagHistorica,tagHistorica2].filter(t=>t&&TAG_SVGS[t]);
     let tagY=50;
