@@ -842,9 +842,10 @@ select.field-input option{background:var(--bg3);}
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <input type="text" id="geek-search" placeholder="Buscar por nome ou categoria..." oninput="renderTabelaGeek()">
           </div>
-          <select class="btn-filtro" id="geek-sort" onchange="renderTabelaGeek()" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:13px;padding:7px 14px;">
+          <select class="btn-filtro" id="geek-sort" onchange="geekRenderTabela()" style="border-radius:var(--radius);font-family:'Inter',sans-serif;cursor:pointer;outline:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:13px;padding:7px 14px;">
             <option value="">Mais recentes</option>
             <option value="desconto_desc">Maior desconto</option>
+            <option value="desconto_asc">Menor desconto</option>
             <option value="desconto_asc">Menor desconto</option>
             <option value="preco_asc">Menor preço</option>
             <option value="preco_desc">Maior preço</option>
@@ -1065,6 +1066,7 @@ select.field-input option{background:var(--bg3);}
 
 
 
+<div class="panel-overlay" id="panel-overlay" onclick="fecharPainel()"></div>
 <div class="slide-panel" id="slide-panel">
   <div class="panel-header">
     <button class="panel-back" onclick="fecharPainel()">
@@ -3199,9 +3201,11 @@ function geekRenderTabela(){
     btn.textContent=label+' ('+count+')';
   });
 
-  if(sort==='desconto_desc') lista.sort(function(a,b){var da=a.preco_original&&a.preco_final?(a.preco_original-a.preco_final)/a.preco_original:0;var db=b.preco_original&&b.preco_final?(b.preco_original-b.preco_final)/b.preco_original:0;return db-da;});
-  else if(sort==='preco_asc') lista.sort(function(a,b){return(a.preco_final||0)-(b.preco_final||0);});
-  else if(sort==='preco_desc') lista.sort(function(a,b){return(b.preco_final||0)-(a.preco_final||0);});
+  var pp=function(v){return parseFloat((v||'0').toString().replace(/\./g,'').replace(',','.'));};
+  if(sort==='desconto_desc') lista.sort(function(a,b){var po_a=pp(a.preco_original),pf_a=pp(a.preco_final),po_b=pp(b.preco_original),pf_b=pp(b.preco_final);var da=po_a&&pf_a?(po_a-pf_a)/po_a:0;var db=po_b&&pf_b?(po_b-pf_b)/po_b:0;return db-da;});
+  else if(sort==='desconto_asc') lista.sort(function(a,b){var po_a=pp(a.preco_original),pf_a=pp(a.preco_final),po_b=pp(b.preco_original),pf_b=pp(b.preco_final);var da=po_a&&pf_a?(po_a-pf_a)/po_a:0;var db=po_b&&pf_b?(po_b-pf_b)/po_b:0;return da-db;});
+  else if(sort==='preco_asc') lista.sort(function(a,b){return pp(a.preco_final)-pp(b.preco_final);});
+  else if(sort==='preco_desc') lista.sort(function(a,b){return pp(b.preco_final)-pp(a.preco_final);});
 
   var PER=20, total=lista.length, totalPages=Math.max(1,Math.ceil(total/PER));
   if(geekPagina>totalPages) geekPagina=totalPages;
