@@ -731,7 +731,7 @@ select.field-input option{background:var(--bg3);}
       <h1 class="page-title">Gerador de Cupons</h1>
       <p style="font-size:13px;color:var(--text2);margin-bottom:1.5rem;">Crie cards de alerta de cupom para o WhatsApp.</p>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;" id="cupom-layout">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.5rem;align-items:start;overflow:visible;" id="cupom-layout">
 
         <!-- FORMULÁRIO -->
         <div class="table-card" style="padding:1.5rem;">
@@ -2924,7 +2924,7 @@ function buildCupomWppText(){
   L.push('');
   L.push('_⚠️ Cupons são por tempo limitado e podem esgotar a qualquer momento. Confira disponibilidade e preço antes de finalizar a compra._');
   L.push('_🔗 Link de afiliado — nos ajuda sem custo extra pra você!_');
-  return L.join('\\n');
+  return L.join('\n');
 }
 
 // Adicionar listeners para atualizar preview em tempo real
@@ -3301,6 +3301,7 @@ function abrirGeekPainel(titulo){
 function fecharGeekPainel(){
   document.getElementById('geek-panel-overlay').classList.remove('open');
   document.getElementById('geek-slide-panel').classList.remove('open');
+  document.body.style.overflow='';
   setTimeout(geekLimparPainel, 300);
 }
 
@@ -3724,7 +3725,6 @@ window.addEventListener('wb-geek-dados', function(e) {
     var overlay = document.getElementById('geek-panel-overlay');
     if (overlay) overlay.classList.add('open');
     panel.classList.add('open');
-    document.body.style.overflow = 'hidden';
   }
   setTimeout(function() {
     if (d.nome)           { var el=document.getElementById('geek-nome'); if(el) el.value=d.nome; }
